@@ -6,13 +6,13 @@ import numpy as np
 from gymnasium import spaces
 
 from highway_env import utils
-from highway_env.utils import Vector
-from highway_env.vehicle.controller import MDPVehicle
-from highway_env.vehicle.dynamics import BicycleVehicle
-from highway_env.vehicle.kinematics import Vehicle
+from HighwayEnv.highway_env.utils import Vector
+from HighwayEnv.highway_env.vehicle.controller import MDPVehicle
+from HighwayEnv.highway_env.vehicle.dynamics import BicycleVehicle
+from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 
 if TYPE_CHECKING:
-    from highway_env.envs.common.abstract import AbstractEnv
+    from HighwayEnv.highway_env.envs.common.abstract import AbstractEnv
 
 Action = Union[int, np.ndarray]
 

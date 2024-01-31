@@ -1,5 +1,5 @@
-from highway_env.road.road import Road, RoadNetwork
-from highway_env.vehicle.uncertainty.prediction import IntervalVehicle
+from HighwayEnv.highway_env.road.road import Road, RoadNetwork
+from HighwayEnv.highway_env.vehicle.uncertainty.prediction import IntervalVehicle
 
 FPS = 15
 

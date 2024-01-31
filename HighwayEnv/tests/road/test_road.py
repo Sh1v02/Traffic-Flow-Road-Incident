@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from highway_env.road.lane import CircularLane, PolyLane, StraightLane
-from highway_env.road.road import Road, RoadNetwork
-from highway_env.vehicle.controller import ControlledVehicle
+from HighwayEnv.highway_env.road.lane import CircularLane, PolyLane, StraightLane
+from HighwayEnv.highway_env.road.road import Road, RoadNetwork
+from HighwayEnv.highway_env.vehicle.controller import ControlledVehicle
 
 
 @pytest.fixture

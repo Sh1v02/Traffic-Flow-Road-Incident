@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Optional
 import numpy as np
 
 from highway_env import utils
-from highway_env.vehicle.kinematics import Vehicle
+from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 
 if TYPE_CHECKING:
-    from highway_env.envs import AbstractEnv
+    from HighwayEnv.highway_env.envs import AbstractEnv
 
 
 def finite_mdp(

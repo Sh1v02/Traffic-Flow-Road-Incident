@@ -4,9 +4,9 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 
 from highway_env import utils
-from highway_env.road.road import LaneIndex, Road, Route
-from highway_env.utils import Vector
-from highway_env.vehicle.kinematics import Vehicle
+from HighwayEnv.highway_env.road.road import LaneIndex, Road, Route
+from HighwayEnv.highway_env.utils import Vector
+from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 
 
 class ControlledVehicle(Vehicle):

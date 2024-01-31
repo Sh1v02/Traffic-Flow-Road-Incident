@@ -15,7 +15,7 @@ from torch.distributions import Categorical
 from torch.nn import functional as F
 
 import highway_env  # noqa: F401
-from highway_env.utils import lmap
+from HighwayEnv.highway_env.utils import lmap
 
 # ==================================
 #        Policy Architecture

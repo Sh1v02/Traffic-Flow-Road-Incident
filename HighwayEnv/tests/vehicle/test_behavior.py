@@ -1,8 +1,8 @@
 import pytest
 
-from highway_env.road.road import Road, RoadNetwork
-from highway_env.vehicle.behavior import IDMVehicle, LinearVehicle
-from highway_env.vehicle.objects import Obstacle
+from HighwayEnv.highway_env.road.road import Road, RoadNetwork
+from HighwayEnv.highway_env.vehicle.behavior import IDMVehicle, LinearVehicle
+from HighwayEnv.highway_env.vehicle.objects import Obstacle
 
 FPS = 15
 vehicle_types = [IDMVehicle, LinearVehicle]

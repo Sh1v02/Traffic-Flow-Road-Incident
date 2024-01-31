@@ -4,17 +4,17 @@ from typing import TYPE_CHECKING, Callable, List, Optional
 import numpy as np
 import pygame
 
-from highway_env.envs.common.action import (
+from HighwayEnv.highway_env.envs.common.action import (
     ActionType,
     ContinuousAction,
     DiscreteMetaAction,
 )
-from highway_env.road.graphics import RoadGraphics, WorldSurface
-from highway_env.vehicle.graphics import VehicleGraphics
+from HighwayEnv.highway_env.road.graphics import RoadGraphics, WorldSurface
+from HighwayEnv.highway_env.vehicle.graphics import VehicleGraphics
 
 if TYPE_CHECKING:
-    from highway_env.envs import AbstractEnv
-    from highway_env.envs.common.abstract import Action
+    from HighwayEnv.highway_env.envs import AbstractEnv
+    from HighwayEnv.highway_env.envs.common.abstract import Action
 
 
 class EnvViewer(object):
@@ -254,7 +254,7 @@ class ObservationGraphics(object):
 
     @classmethod
     def display(cls, obs, sim_surface):
-        from highway_env.envs.common.observation import LidarObservation
+        from HighwayEnv.highway_env.envs.common.observation import LidarObservation
 
         if isinstance(obs, LidarObservation):
             cls.display_grid(obs, sim_surface)

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Callable, List, Tuple
 import numpy as np
 
 from highway_env import utils
-from highway_env.interval import (
+from HighwayEnv.highway_env.interval import (
     LPV,
     integrator_interval,
     interval_absolute_to_local,
@@ -15,14 +15,14 @@ from highway_env.interval import (
     polytope,
     vector_interval_section,
 )
-from highway_env.road.road import LaneIndex, Road, Route
-from highway_env.utils import Vector
-from highway_env.vehicle.behavior import LinearVehicle
-from highway_env.vehicle.controller import MDPVehicle
-from highway_env.vehicle.kinematics import Vehicle
+from HighwayEnv.highway_env.road.road import LaneIndex, Road, Route
+from HighwayEnv.highway_env.utils import Vector
+from HighwayEnv.highway_env.vehicle.behavior import LinearVehicle
+from HighwayEnv.highway_env.vehicle.controller import MDPVehicle
+from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 
 if TYPE_CHECKING:
-    from highway_env.vehicle.objects import RoadObject
+    from HighwayEnv.highway_env.vehicle.objects import RoadObject
 
 Polytope = Tuple[np.ndarray, List[np.ndarray]]
 

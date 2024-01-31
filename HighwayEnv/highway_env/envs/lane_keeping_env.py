@@ -5,10 +5,10 @@ from typing import Tuple
 
 import numpy as np
 
-from highway_env.envs.common.abstract import AbstractEnv
-from highway_env.road.lane import LineType, SineLane, StraightLane
-from highway_env.road.road import Road, RoadNetwork
-from highway_env.vehicle.dynamics import BicycleVehicle
+from HighwayEnv.highway_env.envs.common.abstract import AbstractEnv
+from HighwayEnv.highway_env.road.lane import LineType, SineLane, StraightLane
+from HighwayEnv.highway_env.road.road import Road, RoadNetwork
+from HighwayEnv.highway_env.vehicle.dynamics import BicycleVehicle
 
 
 class LaneKeepingEnv(AbstractEnv):

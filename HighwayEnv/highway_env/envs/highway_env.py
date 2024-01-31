@@ -2,13 +2,13 @@ from typing import Dict, Text
 
 import numpy as np
 
-from highway_env import utils
-from highway_env.envs.common.abstract import AbstractEnv
-from highway_env.envs.common.action import Action
-from highway_env.road.road import Road, RoadNetwork
-from highway_env.utils import near_split
-from highway_env.vehicle.controller import ControlledVehicle
-from highway_env.vehicle.kinematics import Vehicle
+from HighwayEnv.highway_env import utils
+from HighwayEnv.highway_env.envs.common.abstract import AbstractEnv
+from HighwayEnv.highway_env.envs.common.action import Action
+from HighwayEnv.highway_env.road.road import Road, RoadNetwork
+from HighwayEnv.highway_env.utils import near_split
+from HighwayEnv.highway_env.vehicle.controller import ControlledVehicle
+from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 
 Observation = np.ndarray
 

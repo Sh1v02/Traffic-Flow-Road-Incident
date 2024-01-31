@@ -4,8 +4,8 @@ from typing import Callable, List, Tuple, Union
 import numpy as np
 from numpy.linalg import LinAlgError
 
-from highway_env.road.lane import AbstractLane
-from highway_env.utils import Interval, Matrix, Vector
+from HighwayEnv.highway_env.road.lane import AbstractLane
+from HighwayEnv.highway_env.utils import Interval, Matrix, Vector
 
 
 def intervals_product(a: Interval, b: Interval) -> np.ndarray:

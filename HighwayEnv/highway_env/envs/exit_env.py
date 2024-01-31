@@ -2,11 +2,11 @@ from typing import Dict, Text, Tuple
 
 import numpy as np
 
-from highway_env import utils
-from highway_env.envs import CircularLane, HighwayEnv, Vehicle
-from highway_env.envs.common.action import Action
-from highway_env.road.road import Road, RoadNetwork
-from highway_env.vehicle.controller import ControlledVehicle
+from HighwayEnv.highway_env import utils
+from HighwayEnv.highway_env.envs import CircularLane, HighwayEnv, Vehicle
+from HighwayEnv.highway_env.envs.common.action import Action
+from HighwayEnv.highway_env.road.road import Road, RoadNetwork
+from HighwayEnv.highway_env.vehicle.controller import ControlledVehicle
 
 
 class ExitEnv(HighwayEnv):

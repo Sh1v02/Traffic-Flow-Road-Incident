@@ -3,9 +3,9 @@ from typing import Dict, Text
 import numpy as np
 
 from highway_env import utils
-from highway_env.envs.common.abstract import AbstractEnv
-from highway_env.road.lane import LineType, StraightLane
-from highway_env.road.road import Road, RoadNetwork
+from HighwayEnv.highway_env.envs.common.abstract import AbstractEnv
+from HighwayEnv.highway_env.road.lane import LineType, StraightLane
+from HighwayEnv.highway_env.road.road import Road, RoadNetwork
 
 
 class TwoWayEnv(AbstractEnv):
