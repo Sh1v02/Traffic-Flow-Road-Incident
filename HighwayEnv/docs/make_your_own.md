@@ -51,7 +51,7 @@ environment implementation with `self.config["config_key"]`, and once the enviro
 In `highway_env/envs/__init__.py`, add the following import:
 
 ```python
-from highway_env.envs.your_env import *
+from HighwayEnv.highway_env.envs.your_env import *
 ```
 
 so you can register your env in the `register_highway_envs()` method of `highway_env/__init__.py`
