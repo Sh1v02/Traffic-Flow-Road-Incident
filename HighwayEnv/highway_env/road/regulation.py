@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.road.road import Road, RoadNetwork
 from HighwayEnv.highway_env.vehicle.controller import ControlledVehicle, MDPVehicle
 from HighwayEnv.highway_env.vehicle.kinematics import Vehicle

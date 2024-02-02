@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 
 if TYPE_CHECKING:

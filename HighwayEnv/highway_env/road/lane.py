@@ -1,9 +1,10 @@
+from Settings import graphics_settings
 from abc import ABCMeta, abstractmethod
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.road.spline import LinearSpline2D
 from HighwayEnv.highway_env.utils import Vector, class_from_path, get_class_path, wrap_to_pi
 
@@ -13,7 +14,7 @@ class AbstractLane(object):
     """A lane on the road, described by its central curve."""
 
     metaclass__ = ABCMeta
-    DEFAULT_WIDTH: float = 4
+    DEFAULT_WIDTH: float = graphics_settings.LANE_WIDTH
     VEHICLE_LENGTH: float = 5
     length: float = 0
     line_types: List["LineType"]
