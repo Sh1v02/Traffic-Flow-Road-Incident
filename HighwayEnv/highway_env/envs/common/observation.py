@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from gymnasium import spaces
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.envs.common.finite_mdp import compute_ttc_grid
 from HighwayEnv.highway_env.envs.common.graphics import EnvViewer
 from HighwayEnv.highway_env.road.lane import AbstractLane

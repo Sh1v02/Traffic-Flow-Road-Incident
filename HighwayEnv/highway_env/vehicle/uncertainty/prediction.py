@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Callable, List, Tuple
 
 import numpy as np
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.interval import (
     LPV,
     integrator_interval,

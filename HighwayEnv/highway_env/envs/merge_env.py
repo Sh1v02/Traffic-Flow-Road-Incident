@@ -2,7 +2,7 @@ from typing import Dict, Text
 
 import numpy as np
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.envs.common.abstract import AbstractEnv
 from HighwayEnv.highway_env.road.lane import LineType, SineLane, StraightLane
 from HighwayEnv.highway_env.road.road import Road, RoadNetwork
@@ -30,7 +30,7 @@ class MergeEnv(AbstractEnv):
                 "high_speed_reward": 0.2,
                 "reward_speed_range": [20, 30],
                 "merging_speed_reward": -0.5,
-                "lane_change_reward": -0.05,
+                "lane_change_reward": -0.05
             }
         )
         return cfg
@@ -152,7 +152,8 @@ class MergeEnv(AbstractEnv):
             np_random=self.np_random,
             record_history=self.config["show_trajectories"],
         )
-        road.objects.append(Obstacle(road, lbc.position(ends[2], 0)))
+        # lbc.position(ends[2], 0))
+        road.objects.append(Obstacle(road, [250, 4]))
         self.road = road
 
     def _make_vehicles(self) -> None:

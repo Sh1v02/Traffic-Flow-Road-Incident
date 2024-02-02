@@ -1,3 +1,5 @@
+from Settings import graphics_settings
+
 import copy
 import os
 from typing import Dict, List, Optional, Text, Tuple, TypeVar
@@ -7,7 +9,7 @@ import numpy as np
 from gymnasium import Wrapper
 from gymnasium.wrappers import RecordVideo
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.envs.common.action import Action, ActionType, action_factory
 from HighwayEnv.highway_env.envs.common.finite_mdp import finite_mdp
 from HighwayEnv.highway_env.envs.common.graphics import EnvViewer
@@ -94,8 +96,8 @@ class AbstractEnv(gym.Env):
             "simulation_frequency": 15,  # [Hz]
             "policy_frequency": 1,  # [Hz]
             "other_vehicles_type": "highway_env.vehicle.behavior.IDMVehicle",
-            "screen_width": 600,  # [px]
-            "screen_height": 150,  # [px]
+            "screen_width": graphics_settings.SCREEN_WIDTH,  # [px]
+            "screen_height": graphics_settings.SCREEN_HEIGHT,  # [px]
             "centering_position": [0.3, 0.5],
             "scaling": 5.5,
             "show_trajectories": False,

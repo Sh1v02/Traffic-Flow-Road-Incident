@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, Union
 import numpy as np
 from gymnasium import spaces
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.utils import Vector
 from HighwayEnv.highway_env.vehicle.controller import MDPVehicle
 from HighwayEnv.highway_env.vehicle.dynamics import BicycleVehicle

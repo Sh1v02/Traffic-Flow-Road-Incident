@@ -1,3 +1,4 @@
+from Settings import graphics_settings
 import os
 from typing import TYPE_CHECKING, Callable, List, Optional
 
@@ -18,7 +19,6 @@ if TYPE_CHECKING:
 
 
 class EnvViewer(object):
-
     """A viewer to render a highway driving environment."""
 
     SAVE_IMAGES = False
@@ -34,7 +34,12 @@ class EnvViewer(object):
         self.frame = 0
         self.directory = None
 
+        self.button_switches = {
+            "render_env": True
+        }
+
         pygame.init()
+        self.button_font = pygame.font.Font(None, 20)
         pygame.display.set_caption("Highway-env")
         panel_size = (self.config["screen_width"], self.config["screen_height"])
 
@@ -43,7 +48,9 @@ class EnvViewer(object):
         # handling a screen display, useful for e.g. cloud computing
         if not self.offscreen:
             self.screen = pygame.display.set_mode(
-                [self.config["screen_width"], self.config["screen_height"]]
+                [self.config["screen_width"] + (2 * graphics_settings.STARTING_BUTTON_X),
+                 self.config["screen_height"] + graphics_settings.BUTTON_HEIGHT + (
+                         3 * graphics_settings.STARTING_BUTTON_Y)]
             )
         if self.agent_display:
             self.extend_display()
@@ -56,9 +63,36 @@ class EnvViewer(object):
         )
         self.clock = pygame.time.Clock()
 
-        self.enabled = True
         if os.environ.get("SDL_VIDEODRIVER", None) == "dummy":
-            self.enabled = False
+            self.button_switches["render_env"] = False
+
+    def create_parent_screen_buttons(self):
+        self.draw_button(graphics_settings.STARTING_BUTTON_X, graphics_settings.STARTING_BUTTON_Y,
+                         200, graphics_settings.BUTTON_HEIGHT,
+                         "Render Environment: " + str(self.button_switches["render_env"]), toggle="render_env")
+
+    def draw_button(self, start_x, start_y, width, height, text, toggle):
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_clicked = True if pygame.mouse.get_pressed()[0] else False
+
+        if start_x + width > mouse_pos[0] > start_x and start_y + height > mouse_pos[1] > start_y:
+            pygame.draw.rect(self.screen, (140, 140, 140), (start_x, start_y, width, height))
+            if mouse_clicked:
+                self.toggle_button_variable_flip(toggle)
+        else:
+            pygame.draw.rect(self.screen, (220, 220, 220), (start_x, start_y, width, height))
+
+        text_surface = self.button_font.render(text, True, "black")
+        text_rect = text_surface.get_rect(center=(start_x + width / 2, start_y + height / 2))
+        self.screen.blit(text_surface, text_rect)
+        pygame.display.flip()
+
+    def toggle_button_variable_flip(self, key):
+        """
+        Flips the bool value stored in self.button_switches based on the :param key passed in.
+        This allows for a single toggle button method for any bool flag to be toggled by a button click
+        """
+        self.button_switches[key] = not self.button_switches[key]
 
     def set_agent_display(self, agent_display: Callable) -> None:
         """
@@ -114,8 +148,10 @@ class EnvViewer(object):
                 EventHandler.handle_event(self.env.action_type, event)
 
     def display(self) -> None:
+        # Create buttons for controlling the screen/window
+        self.create_parent_screen_buttons()
         """Display the road and vehicles on a pygame window."""
-        if not self.enabled:
+        if not self.button_switches["render_env"]:
             return
 
         self.sim_surface.move_display_window_to(self.window_position())
@@ -152,7 +188,9 @@ class EnvViewer(object):
         ObservationGraphics.display(self.env.observation_type, self.sim_surface)
 
         if not self.offscreen:
-            self.screen.blit(self.sim_surface, (0, 0))
+            self.screen.blit(self.sim_surface,
+                             (graphics_settings.STARTING_BUTTON_X,
+                              graphics_settings.BUTTON_HEIGHT + (2 * graphics_settings.STARTING_BUTTON_Y)))
             if self.env.config["real_time_rendering"]:
                 self.clock.tick(self.env.config["simulation_frequency"])
             pygame.display.flip()
@@ -195,7 +233,7 @@ class EnvViewer(object):
 class EventHandler(object):
     @classmethod
     def handle_event(
-        cls, action_type: ActionType, event: pygame.event.EventType
+            cls, action_type: ActionType, event: pygame.event.EventType
     ) -> None:
         """
         Map the pygame keyboard events to control decisions
@@ -210,7 +248,7 @@ class EventHandler(object):
 
     @classmethod
     def handle_discrete_action_event(
-        cls, action_type: DiscreteMetaAction, event: pygame.event.EventType
+            cls, action_type: DiscreteMetaAction, event: pygame.event.EventType
     ) -> None:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT and action_type.longitudinal:
@@ -224,7 +262,7 @@ class EventHandler(object):
 
     @classmethod
     def handle_continuous_action_event(
-        cls, action_type: ContinuousAction, event: pygame.event.EventType
+            cls, action_type: ContinuousAction, event: pygame.event.EventType
     ) -> None:
         action = action_type.last_action.copy()
         steering_index = action_type.space().shape[0] - 1

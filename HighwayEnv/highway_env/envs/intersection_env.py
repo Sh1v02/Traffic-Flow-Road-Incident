@@ -2,7 +2,7 @@ from typing import Dict, Text, Tuple
 
 import numpy as np
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 from HighwayEnv.highway_env.envs.common.abstract import AbstractEnv, MultiAgentWrapper
 from HighwayEnv.highway_env.road.lane import AbstractLane, CircularLane, LineType, StraightLane
 from HighwayEnv.highway_env.road.regulation import RegulatedRoad

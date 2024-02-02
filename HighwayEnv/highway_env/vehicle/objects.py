@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional, Sequence, Tuple
 
 import numpy as np
 
-from highway_env import utils
+from HighwayEnv.highway_env import utils
 
 if TYPE_CHECKING:
     from HighwayEnv.highway_env.road.lane import AbstractLane
