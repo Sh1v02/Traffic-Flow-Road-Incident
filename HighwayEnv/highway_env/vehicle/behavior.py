@@ -9,6 +9,10 @@ from HighwayEnv.highway_env.vehicle.controller import ControlledVehicle
 from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 
 
+class BrokenDownVehicle(Vehicle):
+    def __init__(self, road, position):
+        super().__init__(road, position)
+
 class IDMVehicle(ControlledVehicle):
     """
     A vehicle using both a longitudinal and a lateral decision policies.

@@ -38,6 +38,11 @@ def register_highway_envs():
         entry_point="highway_env.envs:HighwayEnvFast",
     )
 
+    register(
+        id="highway-with-obstructions-v0",
+        entry_point="highway_env.envs:HighwayEnvWithObstructions"
+    )
+
     # intersection_env.py
     register(
         id="intersection-v0",

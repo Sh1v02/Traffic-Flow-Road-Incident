@@ -1,4 +1,5 @@
 from HighwayEnv.highway_env.envs.highway_env import *
+from HighwayEnv.highway_env.envs.highway_with_obstructions_env import *
 from HighwayEnv.highway_env.envs.merge_env import *
 from HighwayEnv.highway_env.envs.parking_env import *
 from HighwayEnv.highway_env.envs.roundabout_env import *
