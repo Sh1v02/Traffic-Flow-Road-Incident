@@ -1,5 +1,5 @@
 import random
-from typing import Dict, Text
+from typing import Dict, Text, Optional
 
 import numpy as np
 
@@ -16,6 +16,7 @@ from HighwayEnv.highway_env.vehicle.objects import Obstacle
 Observation = np.ndarray
 
 
+# TODO: Allow for multi-agent compatibility (check IntersectionEnvironment step function and look at the methods called)
 class HighwayEnvWithObstructions(AbstractEnv):
     """
     A highway driving environment.
@@ -41,7 +42,8 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 "ego_spacing": 2,
                 "vehicles_density": 1,
                 "collision_reward": -1,  # The reward received when colliding with a vehicle.
-                "right_lane_reward": 0.1,  # The reward received when driving on the right-most lanes, linearly mapped to
+                "right_lane_reward": 0.1,
+                # The reward received when driving on the right-most lanes, linearly mapped to
                 # zero for other lanes.
                 "high_speed_reward": 0.4,  # The reward received when driving at full speed, linearly mapped to zero for
                 # lower speeds according to config["reward_speed_range"].
@@ -49,8 +51,8 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 "reward_speed_range": [20, 30],
                 "normalize_reward": True,
                 "offroad_terminal": True,
-                "obstruction_count": 1,
-                "obstruction_type": "BrokenDownVehicle"  #[Obstacle, BrokenDownVehicle]
+                "obstruction_count": 2,
+                "obstruction_type": "BrokenDownVehicle"  # [Obstacle, BrokenDownVehicle]
             }
         )
         return config
@@ -107,55 +109,90 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 BrokenDownVehicle(self.road, position))
             self.road.objects.append(obstruction)
 
+    # TODO: Understand whether the average reward is used for each agents TD-error,
+    #  or if its own individual reward is used
     def _reward(self, action: Action) -> float:
+        """Aggregated reward, for cooperative agents."""
+        return sum(
+            self._agent_reward(vehicle) for vehicle in self.controlled_vehicles
+        ) / len(self.controlled_vehicles)
+
+    # TODO: Create a MultiAgentWrapper that handles this to prevent duplication
+    def _agent_reward(self, vehicle: Vehicle) -> float:
         """
+        Per-agent reward signal.
         The reward is defined to foster driving at high speed, on the rightmost lanes, and to avoid collisions.
         :param action: the last action performed
         :return: the corresponding reward
         """
-        rewards = self._rewards(action)
+        rewards = self._agent_rewards(vehicle)
         reward = sum(
             self.config.get(name, 0) * reward for name, reward in rewards.items()
         )
+        # reward = self.config["arrived_reward"] if rewards["arrived_reward"] else reward
+        # reward *= rewards["on_road_reward"]
         if self.config["normalize_reward"]:
             reward = utils.lmap(
                 reward,
-                [
-                    self.config["collision_reward"],
-                    self.config["high_speed_reward"] + self.config["right_lane_reward"],
-                ],
+                [self.config["collision_reward"],  # ,self.config["arrived_reward]],
+                 self.config["high_speed_reward"] + self.config["right_lane_reward"]],
                 [0, 1],
             )
         reward *= rewards["on_road_reward"]
         return reward
 
-    def _rewards(self, action: Action) -> Dict[Text, float]:
-        neighbours = self.road.network.all_side_lanes(self.vehicle.lane_index)
+    def _agent_rewards(self, vehicle: Vehicle) -> Dict[Text, float]:
+        """Per-agent per-objective reward signal."""
+        neighbours = self.road.network.all_side_lanes(vehicle.lane_index)
         lane = (
-            self.vehicle.target_lane_index[2]
-            if isinstance(self.vehicle, ControlledVehicle)
-            else self.vehicle.lane_index[2]
+            vehicle.target_lane_index[2]
+            if isinstance(vehicle, ControlledVehicle)
+            else vehicle.lane_index[2]
         )
         # Use forward speed rather than speed, see https://github.com/eleurent/highway-env/issues/268
-        forward_speed = self.vehicle.speed * np.cos(self.vehicle.heading)
+        forward_speed = vehicle.speed * np.cos(vehicle.heading)
         scaled_speed = utils.lmap(
             forward_speed, self.config["reward_speed_range"], [0, 1]
         )
         return {
-            "collision_reward": float(self.vehicle.crashed),
+            "collision_reward": float(vehicle.crashed),
             "right_lane_reward": lane / max(len(neighbours) - 1, 1),
             "high_speed_reward": np.clip(scaled_speed, 0, 1),
-            "on_road_reward": float(self.vehicle.on_road),
+            # "arrived_reward": self.has_arrived(vehicle),
+            "on_road_reward": float(vehicle.on_road),
+        }
+
+    def _rewards(self, action: Action) -> Dict[Text, float]:
+        """Multi-objective rewards, for cooperative agents."""
+        agents_rewards = [
+            self._agent_rewards(vehicle) for vehicle in self.controlled_vehicles
+        ]
+        return {
+            name: sum(agent_rewards[name] for agent_rewards in agents_rewards) / len(agents_rewards)
+            for name in agents_rewards[0].keys()
         }
 
     def _is_terminated(self) -> bool:
-        """The episode is over if the ego vehicle crashed."""
+        """The episode is over if any of the agents are in a terminal state (crashed, offroad if applicable)."""
         return (
-                self.vehicle.crashed
-                or self.config["offroad_terminal"]
-                and not self.vehicle.on_road
+            any(self._agent_is_terminal(vehicle) for vehicle in self.controlled_vehicles)
         )
+
+    # TODO: (High) End episode when all agents have passed the last obstruction
+    def _agent_is_terminal(self, vehicle: Vehicle) -> bool:
+        """The episode is over when a collision occurs or when the vehicle is offroad."""
+        return vehicle.crashed or (self.config["offroad_terminal"] and not vehicle.on_road)
 
     def _is_truncated(self) -> bool:
         """The episode is truncated if the time limit is reached."""
         return self.time >= self.config["duration"]
+
+    def _info(self, obs: np.ndarray, action: Optional[Action] = None) -> dict:
+        # info = super()._info(obs, action)
+        info = {
+            "agents_actions": action,
+            "agents_rewards": tuple(self._agent_reward(vehicle) for vehicle in self.controlled_vehicles),
+            "agents_dones": tuple(self._agent_is_terminal(vehicle) for vehicle in self.controlled_vehicles),
+            "agents_speeds": tuple(vehicle.speed for vehicle in self.controlled_vehicles)
+        }
+        return info
