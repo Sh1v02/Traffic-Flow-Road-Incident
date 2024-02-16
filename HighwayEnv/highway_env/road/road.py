@@ -433,7 +433,7 @@ class Road(object):
             o
             for o in self.objects
             if np.linalg.norm(o.position - vehicle.position) < distance
-            and -2 * vehicle.LENGTH < vehicle.lane_distance_to(o)
+            and (see_behind or -2 * vehicle.LENGTH < vehicle.lane_distance_to(o))
         ]
 
         objects_ = vehicles if vehicles_only else vehicles + obstacles
