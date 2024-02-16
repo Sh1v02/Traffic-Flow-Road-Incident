@@ -30,9 +30,24 @@ class HighwayEnvWithObstructions(AbstractEnv):
         config = super().default_config()
         config.update(
             {
-                "observation": {"type": "Kinematics"},
+                "observation": {
+                    "type": "Kinematics",
+                    "vehicles_count": 10,
+                    "see_behind": True,
+                    "normalize": False,
+                    "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
+                    "features_range": {
+                        "x": [-100, 100],
+                        "y": [-100, 100],
+                        "vx": [-20, 20],
+                        "vy": [-20, 20]
+                    },
+                    "absolute": True,
+                    "order": "sorted",
+                    # "observe_intentions": True
+                },
                 "action": {
-                    "type": "DiscreteMetaAction",
+                    "type": "ContinuousAction",
                 },
                 "lanes_count": 2,
                 "vehicles_count": 0,
@@ -50,8 +65,9 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 "lane_change_reward": 0,  # The reward received at each lane change action.
                 "reward_speed_range": [20, 30],
                 "normalize_reward": True,
+                "absolute": True,
                 "offroad_terminal": True,
-                "obstruction_count": 2,
+                "obstruction_count": 1,
                 "obstruction_type": "BrokenDownVehicle"  # [Obstacle, BrokenDownVehicle]
             }
         )
@@ -104,7 +120,7 @@ class HighwayEnvWithObstructions(AbstractEnv):
             vehicle = other_vehicles_type.create_random(
                 self.road, speed=0, spacing=1 / self.config["vehicles_density"]
             )
-            position = [vehicle.position[0] + 150, vehicle.position[1]]
+            position = [vehicle.position[0] + 50, vehicle.position[1]]
             obstruction = Obstacle(self.road, position) if self.config["obstruction_type"] == "Obstacle" else (
                 BrokenDownVehicle(self.road, position))
             self.road.objects.append(obstruction)
@@ -154,6 +170,7 @@ class HighwayEnvWithObstructions(AbstractEnv):
         scaled_speed = utils.lmap(
             forward_speed, self.config["reward_speed_range"], [0, 1]
         )
+        # TODO: For lane centering, look at racetrack_env.py _rewards()
         return {
             "collision_reward": float(vehicle.crashed),
             "right_lane_reward": lane / max(len(neighbours) - 1, 1),
