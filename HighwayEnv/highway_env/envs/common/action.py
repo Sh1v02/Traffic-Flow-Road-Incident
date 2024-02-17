@@ -157,8 +157,56 @@ class ContinuousAction(ActionType):
             }
 
     def act(self, action: np.ndarray) -> None:
-        self.controlled_vehicle.act(self.get_action(action))
+        action = self.get_action(action)
+        self.controlled_vehicle.act(action)
         self.last_action = action
+
+class BoundedContinuousAction(ContinuousAction):
+    def __init__(
+            self,
+            env: "AbstractEnv",
+            acceleration_range: Optional[Tuple[float, float]] = None,
+            steering_range: Optional[Tuple[float, float]] = None,
+            speed_range: Optional[Tuple[float, float]] = None,
+            longitudinal: bool = True,
+            lateral: bool = True,
+            dynamical: bool = False,
+            clip: bool = True,
+            **kwargs
+    ) -> None:
+        super().__init__(
+            env,
+            acceleration_range=acceleration_range,
+            steering_range=steering_range,
+            longitudinal=longitudinal,
+            lateral=lateral,
+            dynamical=dynamical,
+            clip=clip
+        )
+
+    def bound_available_lateral_actions(self, action: np.ndarray):
+        network = self.controlled_vehicle.road.network
+        min_steering_clip = -1.0
+        max_steering_clip = 1.0
+        for l_index in network.side_lanes(self.controlled_vehicle.lane_index):
+            if not (l_index[2] < self.controlled_vehicle.lane_index[2]):
+                min_steering_clip = 0.0
+
+            if not (l_index[2] > self.controlled_vehicle.lane_index[2]):
+                max_steering_clip = 0.0
+
+        action[1] = np.clip(action[1], min_steering_clip, max_steering_clip)
+        return action
+
+
+    def get_action(self, action: np.ndarray):
+        # if self.lateral:
+        #     action = self.bound_available_lateral_actions(action)
+        return super().get_action(action)
+
+
+
+
 
 
 class DiscreteAction(ContinuousAction):
@@ -334,6 +382,8 @@ class MultiAgentAction(ActionType):
 def action_factory(env: "AbstractEnv", config: dict) -> ActionType:
     if config["type"] == "ContinuousAction":
         return ContinuousAction(env, **config)
+    if config["type"] == "BoundedContinuousAction":
+        return BoundedContinuousAction(env, **config)
     if config["type"] == "DiscreteAction":
         return DiscreteAction(env, **config)
     elif config["type"] == "DiscreteMetaAction":
