@@ -33,7 +33,7 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 "observation": {
                     "type": "Kinematics",
                     "vehicles_count": 10,
-                    "see_behind": True,
+                    # "see_behind": True,
                     "normalize": False,
                     "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
                     "features_range": {
@@ -47,17 +47,19 @@ class HighwayEnvWithObstructions(AbstractEnv):
                     # "observe_intentions": True
                 },
                 "action": {
-                    "type": "ContinuousAction",
+                    "type": "DiscreteMetaAction",
                 },
                 "lanes_count": 2,
                 "vehicles_count": 0,
                 "controlled_vehicles": 1,
                 "initial_lane_id": None,
-                "duration": 40,  # [s]
-                "ego_spacing": 2,
+                "duration": 90,  # [s]
+                "ego_spacing": 0.5,
                 "vehicles_density": 1,
                 "collision_reward": -1,  # The reward received when colliding with a vehicle.
                 "right_lane_reward": 0.1,
+                "lane_centering_cost": 4,
+                "lane_centering_reward": 1,
                 # The reward received when driving on the right-most lanes, linearly mapped to
                 # zero for other lanes.
                 "high_speed_reward": 0.4,  # The reward received when driving at full speed, linearly mapped to zero for
@@ -67,8 +69,10 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 "normalize_reward": True,
                 "absolute": True,
                 "offroad_terminal": True,
-                "obstruction_count": 1,
-                "obstruction_type": "BrokenDownVehicle"  # [Obstacle, BrokenDownVehicle]
+                "simulation_frequency": 15,  # [Hz]
+                "policy_frequency": 1,  # [Hz]
+                "obstruction_count": 5,
+                "obstruction_type": "Obstacle"  # [Obstacle, BrokenDownVehicle]
             }
         )
         return config
@@ -120,7 +124,7 @@ class HighwayEnvWithObstructions(AbstractEnv):
             vehicle = other_vehicles_type.create_random(
                 self.road, speed=0, spacing=1 / self.config["vehicles_density"]
             )
-            position = [vehicle.position[0] + 50, vehicle.position[1]]
+            position = [vehicle.position[0] + (50 * (i + 1)), vehicle.position[1]]
             obstruction = Obstacle(self.road, position) if self.config["obstruction_type"] == "Obstacle" else (
                 BrokenDownVehicle(self.road, position))
             self.road.objects.append(obstruction)
@@ -142,6 +146,8 @@ class HighwayEnvWithObstructions(AbstractEnv):
         :return: the corresponding reward
         """
         rewards = self._agent_rewards(vehicle)
+        if rewards["on_road_reward"] == 0.0:
+            return -15.0
         reward = sum(
             self.config.get(name, 0) * reward for name, reward in rewards.items()
         )
@@ -150,7 +156,9 @@ class HighwayEnvWithObstructions(AbstractEnv):
         if self.config["normalize_reward"]:
             reward = utils.lmap(
                 reward,
-                [self.config["collision_reward"],  # ,self.config["arrived_reward]],
+                [self.config["collision_reward"],
+                 # self.config["lane_centering_reward"],
+                 # self.config["arrived_reward]],
                  self.config["high_speed_reward"] + self.config["right_lane_reward"]],
                 [0, 1],
             )
@@ -160,6 +168,8 @@ class HighwayEnvWithObstructions(AbstractEnv):
     def _agent_rewards(self, vehicle: Vehicle) -> Dict[Text, float]:
         """Per-agent per-objective reward signal."""
         neighbours = self.road.network.all_side_lanes(vehicle.lane_index)
+        _, lateral = self.vehicle.lane.local_coordinates(self.vehicle.position)
+
         lane = (
             vehicle.target_lane_index[2]
             if isinstance(vehicle, ControlledVehicle)
@@ -177,6 +187,10 @@ class HighwayEnvWithObstructions(AbstractEnv):
             "high_speed_reward": np.clip(scaled_speed, 0, 1),
             # "arrived_reward": self.has_arrived(vehicle),
             "on_road_reward": float(vehicle.on_road),
+            # "in_lane": 1 - (lateral / self.vehicle.lane.width) ** 2,
+            # # TODO: Remove lane_center_reward/replace with this reward?
+            # "lane_centering_reward": 1
+            #                          / (1 + self.config["lane_centering_cost"] * lateral ** 2),
         }
 
     def _rewards(self, action: Action) -> Dict[Text, float]:

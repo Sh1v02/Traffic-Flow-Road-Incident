@@ -4,12 +4,12 @@ import torch
 # TODO: GPU support
 # A cyclic buffer allowing constant time complexity O(1)
 class ExperienceReplayBuffer:
-    def __init__(self, state_dims, action_dims, max_size=10000):
+    def __init__(self, state_dims, action_dims, max_size=10000, actions_type=torch.float32):
         self._max_size = max_size
 
         # Memory tensors
         self._states_memory = torch.zeros((max_size, state_dims))
-        self._actions_memory = torch.zeros((max_size, action_dims))
+        self._actions_memory = torch.zeros((max_size, action_dims), dtype=actions_type)
         self._next_states_memory = torch.zeros((max_size, state_dims))
         self._rewards_memory = torch.zeros((max_size, 1))
         self._dones_memory = torch.zeros((max_size, 1))
@@ -18,10 +18,10 @@ class ExperienceReplayBuffer:
         self.size = 0
 
     # Stores the experience as tensors in their respective memory
-    def add_experience(self, state, action, next_state, reward, done):
-        self._states_memory[self._new_element_pointer] = torch.tensor(state)
+    def add_experience(self, state, action, reward, next_state, done):
+        self._states_memory[self._new_element_pointer] = state
         self._actions_memory[self._new_element_pointer] = torch.tensor(action)
-        self._next_states_memory[self._new_element_pointer] = torch.tensor(next_state)
+        self._next_states_memory[self._new_element_pointer] = next_state
         self._rewards_memory[self._new_element_pointer] = torch.tensor(reward)
         self._dones_memory[self._new_element_pointer] = torch.tensor(done)
 
@@ -36,7 +36,7 @@ class ExperienceReplayBuffer:
         return (
             self._states_memory[batch_indexes],
             self._actions_memory[batch_indexes],
-            self._next_states_memory[batch_indexes],
             self._rewards_memory[batch_indexes],
+            self._next_states_memory[batch_indexes],
             self._dones_memory[batch_indexes]
         )

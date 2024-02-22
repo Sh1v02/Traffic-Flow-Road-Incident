@@ -203,6 +203,7 @@ class RoadNetwork(object):
         lanes = []
         if _id > 0:
             lanes.append((_from, _to, _id - 1))
+        # self.graph[_from][_to] represents number of lanes
         if _id < len(self.graph[_from][_to]) - 1:
             lanes.append((_from, _to, _id + 1))
         return lanes

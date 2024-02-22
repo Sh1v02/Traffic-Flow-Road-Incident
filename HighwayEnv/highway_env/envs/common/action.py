@@ -157,8 +157,8 @@ class ContinuousAction(ActionType):
             }
 
     def act(self, action: np.ndarray) -> None:
-        action = self.get_action(action)
-        self.controlled_vehicle.act(action)
+        # action = self.get_action(action)
+        self.controlled_vehicle.act(self.get_action(action))
         self.last_action = action
 
 class BoundedContinuousAction(ContinuousAction):
@@ -186,14 +186,14 @@ class BoundedContinuousAction(ContinuousAction):
 
     def bound_available_lateral_actions(self, action: np.ndarray):
         network = self.controlled_vehicle.road.network
-        min_steering_clip = -1.0
-        max_steering_clip = 1.0
+        min_steering_clip = 0.0
+        max_steering_clip = 0.0
         for l_index in network.side_lanes(self.controlled_vehicle.lane_index):
-            if not (l_index[2] < self.controlled_vehicle.lane_index[2]):
-                min_steering_clip = 0.0
+            if (l_index[2] < self.controlled_vehicle.lane_index[2]):
+                min_steering_clip = -1.0
 
-            if not (l_index[2] > self.controlled_vehicle.lane_index[2]):
-                max_steering_clip = 0.0
+            if (l_index[2] > self.controlled_vehicle.lane_index[2]):
+                max_steering_clip = 1.0
 
         action[1] = np.clip(action[1], min_steering_clip, max_steering_clip)
         return action
