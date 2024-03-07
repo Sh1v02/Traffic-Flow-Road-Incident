@@ -1,6 +1,6 @@
 import torch
 from src.Models import ActorNetwork, CriticNetwork
-from src.Buffers.ExperienceReplayBuffer import ExperienceReplayBuffer
+from src.Buffers.UniformExperienceReplayBuffer import UniformExperienceReplayBuffer
 
 
 class DDPGAgent:
@@ -16,7 +16,7 @@ class DDPGAgent:
         self.noise = noise
         self.batch_size = batch_size
         self.action_range = action_range if action_range else [-1.0, 1.0]
-        self.replay_buffer = ExperienceReplayBuffer(state_dims, action_dims, 10000)
+        self.replay_buffer = UniformExperienceReplayBuffer(state_dims, action_dims, 10000)
 
         self.actor = ActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr})
         self.critic = CriticNetwork(optimiser, loss, state_dims + action_dims, optimiser_args={"lr": self.critic_lr})

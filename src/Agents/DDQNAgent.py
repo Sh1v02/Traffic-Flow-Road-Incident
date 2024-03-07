@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import torch
 from src.Models import MultiLayerPerceptron
-from src.Buffers.ExperienceReplayBuffer import ExperienceReplayBuffer
+from src.Buffers.UniformExperienceReplayBuffer import UniformExperienceReplayBuffer
 
 
 class DDQNAgent:
@@ -17,7 +17,7 @@ class DDQNAgent:
         self.min_epsilon = min_epsilon
         self.epsilon_decay = epsilon_decay
         self.batch_size = batch_size
-        self.replay_buffer = ExperienceReplayBuffer(state_dims, 1, 10000, actions_type=torch.int32)
+        self.replay_buffer = UniformExperienceReplayBuffer(state_dims, 1, 10000, actions_type=torch.int32)
 
         self.online_network = MultiLayerPerceptron(optimiser, loss, state_dims, action_dims,
                                                    optimiser_args={"lr": lr}, hidden_layer_dims=256)
