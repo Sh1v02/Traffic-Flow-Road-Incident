@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import torch
 from src.Models import MultiLayerPerceptron
-from src.Buffers.UniformExperienceReplayBuffer import UniformExperienceReplayBuffer
+from src.Buffers import UniformExperienceReplayBuffer
 
 
 class DDQNAgent:
@@ -36,7 +36,7 @@ class DDQNAgent:
         return action
 
     def store_experience_in_replay_buffer(self, state, action, reward, next_state, done):
-        self.replay_buffer.add_experience(state, action, reward, next_state, done)
+        self.replay_buffer.add_experience([state, action, reward, next_state, done])
 
     def update_target_network_parameters(self):
         self.target_network.load_state_dict(self.online_network.state_dict())

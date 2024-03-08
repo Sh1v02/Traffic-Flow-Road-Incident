@@ -1,6 +1,6 @@
 import torch
 from src.Models import ActorNetwork, CriticNetwork
-from src.Buffers.UniformExperienceReplayBuffer import UniformExperienceReplayBuffer
+from src.Buffers import UniformExperienceReplayBuffer
 
 
 class DDPGAgent:
