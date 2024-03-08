@@ -1,5 +1,6 @@
-from src.Models import NetworkCreator
 import torch
+
+from src.Models.NetworkCreator import NetworkCreator
 
 
 class CriticNetwork(NetworkCreator):

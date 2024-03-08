@@ -1,4 +1,6 @@
 from torch import nn
+
+
 class MultiLayerPerceptron(nn.Module):
     def __init__(self, optimiser, loss, input_dims, action_dims, hidden_layer_dims=512, optimiser_args=None):
         super().__init__()
@@ -31,4 +33,3 @@ class MultiLayerPerceptron(nn.Module):
         loss = self.loss(predicted, target)
         loss.backward()
         self.optimiser.step()
-

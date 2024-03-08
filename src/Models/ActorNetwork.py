@@ -1,6 +1,6 @@
 import torch
 
-from src.Models import NetworkCreator
+from src.Models.NetworkCreator import NetworkCreator
 
 
 class ActorNetwork(NetworkCreator):

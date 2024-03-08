@@ -1,5 +1,5 @@
 import torch
-from src.Models import ActorNetwork, CriticNetwork
+from src.Models import DDPGActorNetwork, DDPGCriticNetwork
 from src.Buffers import UniformExperienceReplayBuffer
 
 
@@ -18,10 +18,13 @@ class DDPGAgent:
         self.action_range = action_range if action_range else [-1.0, 1.0]
         self.replay_buffer = UniformExperienceReplayBuffer(state_dims, action_dims, 10000)
 
-        self.actor = ActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr})
-        self.critic = CriticNetwork(optimiser, loss, state_dims + action_dims, optimiser_args={"lr": self.critic_lr})
-        self.target_actor = ActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr})
-        self.target_critic = CriticNetwork(optimiser, loss, state_dims + action_dims, optimiser_args={"lr": self.critic_lr})
+        self.actor = DDPGActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr})
+        self.critic = DDPGCriticNetwork(optimiser, loss, state_dims + action_dims,
+                                        optimiser_args={"lr": self.critic_lr})
+        self.target_actor = DDPGActorNetwork(optimiser, loss, state_dims, action_dims,
+                                             optimiser_args={"lr": self.actor_lr})
+        self.target_critic = DDPGCriticNetwork(optimiser, loss, state_dims + action_dims,
+                                               optimiser_args={"lr": self.critic_lr})
 
         # Hard update only for the first time
         self.update_target_network_parameters(tau=1.0)
@@ -38,7 +41,7 @@ class DDPGAgent:
         return torch.clamp(action, self.action_range[0], self.action_range[1]).tolist()
 
     def store_experience_in_replay_buffer(self, state, action, reward, next_state, done):
-        self.replay_buffer.add_experience(state, action, reward, next_state, done)
+        self.replay_buffer.add_experience([state, action, reward, next_state, done])
 
     def update_target_network_parameters(self, tau=None):
         self.update_network_parameters(self.actor, self.target_actor, tau=tau)
@@ -74,13 +77,3 @@ class DDPGAgent:
         self.actor.update(actor_loss)
 
         self.update_target_network_parameters()
-
-
-
-
-
-
-
-
-
-
