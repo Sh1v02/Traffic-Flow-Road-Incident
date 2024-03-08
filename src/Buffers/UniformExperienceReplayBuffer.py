@@ -20,7 +20,8 @@ class UniformExperienceReplayBuffer(ReplayBuffer):
         self.size = 0
 
     # Stores the experience as tensors in their respective memory
-    def add_experience(self, state, action, reward, next_state, done):
+    def add_experience(self, experience):
+        state, action, reward, next_state, done = experience
         self._states_memory[self._new_element_pointer] = state
         self._actions_memory[self._new_element_pointer] = torch.tensor(action)
         self._next_states_memory[self._new_element_pointer] = next_state
