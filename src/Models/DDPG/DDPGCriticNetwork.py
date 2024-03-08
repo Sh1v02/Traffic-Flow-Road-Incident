@@ -1,6 +1,6 @@
 import torch
 
-from src.Models import CriticNetwork
+from src.Models.CriticNetwork import CriticNetwork
 
 
 class DDPGCriticNetwork(CriticNetwork):

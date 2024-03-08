@@ -1,5 +1,6 @@
-from src.Models import ActorNetwork
 import torch
+
+from src.Models.ActorNetwork import ActorNetwork
 
 
 class DDPGActorNetwork(ActorNetwork):
