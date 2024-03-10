@@ -1,0 +1,5 @@
+
+AGENT_TYPE = "ppo"
+
+SEED = 4
+DISCOUNT_FACTOR = 0.99

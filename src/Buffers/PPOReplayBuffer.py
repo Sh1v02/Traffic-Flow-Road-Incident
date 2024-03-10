@@ -6,29 +6,29 @@ class PPOReplayBuffer(ReplayBuffer):
     def __init__(self):
         super().__init__()
 
-        self.states = np.empty(0)
-        self.actions = np.empty(0)
-        self.values = np.empty(0)
-        self.rewards = np.empty(0)
-        self.dones = np.empty(0)
-        self.probabilities = np.empty(0)
+        self.states = []
+        self.actions = []
+        self.values = []
+        self.rewards = []
+        self.dones = []
+        self.probabilities = []
 
     def add_experience(self, experience):
         state, action, value, reward, done, probability = experience
-        np.append(self.states, state)
-        np.append(self.actions, action)
-        np.append(self.values, value)
-        np.append(self.rewards, reward)
-        np.append(self.dones, done)
-        np.append(self.probabilities, probability)
+        self.states.append(state)
+        self.actions.append(action)
+        self.rewards.append(reward)
+        self.values.append(value)
+        self.dones.append(done)
+        self.probabilities.append(probability)
 
     def clear(self):
-        self.states = np.empty(0)
-        self.actions = np.empty(0)
-        self.values = np.empty(0)
-        self.rewards = np.empty(0)
-        self.dones = np.empty(0)
-        self.probabilities = np.empty(0)
+        self.states = []
+        self.actions = []
+        self.rewards = []
+        self.values = []
+        self.dones = []
+        self.probabilities = []
 
     # Return batches of size self.batch_size with random elements in each batch
     def sample_experience(self, batch_size=20):

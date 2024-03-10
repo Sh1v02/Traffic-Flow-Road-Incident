@@ -1,4 +1,5 @@
 import torch
+from torch.distributions import Categorical
 
 from src.Models.ActorNetwork import ActorNetwork
 
@@ -10,4 +11,6 @@ class PPOActorNetwork(ActorNetwork):
 
     def forward(self, state: torch.Tensor):
         action = self.softmax(self.network(state))
-        return action
+        # Return as a distribution to be sampled from
+        return Categorical(action)
+

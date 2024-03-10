@@ -8,11 +8,10 @@ from src.Buffers import UniformExperienceReplayBuffer
 
 
 class DDQNAgent:
-    def __init__(self, state_dims, action_dims, env, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss(),
+    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss(),
                  lr=0.003, gamma=0.99, epsilon=1.0, min_epsilon=0.01, epsilon_decay=0.99,
                  update_target_network_frequency=1000, batch_size=32):
         self.action_dims = action_dims
-        self.env = env
         self.gamma = gamma
         self.epsilon = epsilon
         self.min_epsilon = min_epsilon
@@ -28,7 +27,7 @@ class DDQNAgent:
         self.steps = 0
 
     # epsilon-greedy action selection
-    def get_action(self, state, training=True):
+    def get_action(self, state: torch.Tensor, training=True):
         random_action = training and random.uniform(0, 1) <= self.epsilon
         self.epsilon = max(self.epsilon * self.epsilon_decay, self.min_epsilon)
         action = torch.max(self.online_network(state), dim=0)[1].item() if not random_action \

@@ -10,71 +10,88 @@ from gym.wrappers import RecordVideo
 
 from Agents.DDPGAgent import DDPGAgent
 from Agents.DDQNAgent import DDQNAgent
+from src.Agents import AgentFactory
 from src.Metrics import PlotGraphs
+from src.Settings import settings
 
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
 
-def run():
-    config = {
-        "observation": {
-            "type": "Kinematics",
-            "vehicles_count": 10,
-            "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
-            "features_range": {
-                "x": [-100, 100],
-                "y": [-100, 100],
-                "vx": [-20, 20],
-                "vy": [-20, 20]
-            },
-            "absolute": True,
-            "order": "sorted",
-            "observe_intentions": True
-        }
-    }
+#     config = {
+#         "observation": {
+#             "type": "Kinematics",
+#             "vehicles_count": 10,
+#             "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
+#             "features_range": {
+#                 "x": [-100, 100],
+#                 "y": [-100, 100],
+#                 "vx": [-20, 20],
+#                 "vy": [-20, 20]
+#             },
+#             "absolute": True,
+#             "order": "sorted",
+#             "observe_intentions": True
+#         }
+#     }
 
+def run():
     env = gym.make('highway-with-obstructions-v0', render_mode='rgb_array')
     # TODO: Run 3 lanes 9 obstacles again on different seeds to get a better plot
     # TODO: Change plots to say frames, so steps * 15 (for frame count)
-    save_dir = 'DDQN/Lanes=3_obs=9'
-    record_eps = True
+    save_dir = 'PPO/new_attempt_lanes_obs=2_2_entropy=0.1_batch_size=32_320'
+    record_eps = False
     env = record_wrap(env, 50, save_dir) if record_eps else env
-    # env.configure(config)
 
-    for seed in range(4, 5):
+    for seed in range(1):
         print("\n\n------------------")
+
         save_dir = save_dir + "/seed=" + str(seed)
-        state, info = env.reset(seed=seed)
-        # agent = DDPGAgent(state.size, env.action_space.shape[0], env, noise=0.8)
-        agent = DDQNAgent(state.size, env.action_space.n, env, batch_size=32, update_target_network_frequency=50,
-                          lr=0.0005, gamma=0.8)
+
+        agent_factory = AgentFactory()
+        agent = agent_factory.create_new_agent(env)
 
         steps_history = np.empty(0)
         reward_history = np.empty(0)
         speed_history = np.empty(0)
         steps = 0
         episode = 0
-        max_steps = 50000
+        max_steps = 20000
         while steps < max_steps:
             done = trunc = False
             state, info = env.reset(seed=seed)
-            state = torch.Tensor(state.flatten())
+            state = state.flatten()
+
+            if settings.AGENT_TYPE != 'ppo':
+                state = torch.Tensor(state)
 
             episode_reward = 0
             agent_speed = np.empty(0)
             starting_episode_steps = steps
             print("seed =", seed, " - Episode: ", episode)
             while not done and not trunc:
-                action = agent.get_action(state)
+                if settings.AGENT_TYPE == 'ppo':
+                    action, value, probability = agent.get_action(state)
+                else:
+                    action, value, probability = agent.get_action(state), None, None
+
                 next_state, reward, done, trunc, info = env.step(action)
-                agent_speed = np.append(agent_speed, info["agents_speeds"][0])
+                next_state = next_state.flatten()
+
                 if not record_eps:
                     env.render()
-                next_state = torch.Tensor(next_state.flatten())
-                agent.store_experience_in_replay_buffer(state, action, reward, next_state, done)
+
+                if settings.AGENT_TYPE != 'ppo':
+                    next_state = torch.Tensor(next_state)
+
+                if settings.AGENT_TYPE == 'ppo':
+                    agent.store_experience_in_replay_buffer(state, action, value, reward, done, probability)
+                else:
+                    agent.store_experience_in_replay_buffer(state, action, reward, next_state, done)
+
                 agent.learn()
-                episode_reward += reward
                 state = next_state
+                episode_reward += reward
+                agent_speed = np.append(agent_speed, info["agents_speeds"][0])
                 steps += 1
             episode += 1
             steps_history = np.append(steps_history, steps)
@@ -115,6 +132,7 @@ def record_wrap(env, frequency, save_dir):
     )
     env.unwrapped.set_record_video_wrapper(env)
     return env
+
 
 if __name__ == "__main__":
     run()

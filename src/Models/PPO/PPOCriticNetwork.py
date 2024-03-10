@@ -11,5 +11,3 @@ class PPOCriticNetwork(CriticNetwork):
     def forward(self, state: torch.Tensor):
         value = self.network(state)
         return value
-
-

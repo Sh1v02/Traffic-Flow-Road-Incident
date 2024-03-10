@@ -1,4 +1,4 @@
-from Settings import graphics_settings
+from src.Settings import graphics_settings
 import os
 from typing import TYPE_CHECKING, Callable, List, Optional
 
