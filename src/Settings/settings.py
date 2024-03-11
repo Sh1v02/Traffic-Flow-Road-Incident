@@ -1,5 +1,11 @@
 
 AGENT_TYPE = "ppo"
 
-SEED = 4
+SEED = 0
+TRAINING_STEPS = 50_000
+
 DISCOUNT_FACTOR = 0.99
+
+RECORD_EPISODES = [True, 100]
+
+SAVE_DIR = "PPO/gamma=0.8_batch=64_768_steps=50000"

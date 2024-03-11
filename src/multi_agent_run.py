@@ -11,7 +11,7 @@ from gym.wrappers import RecordVideo
 
 from Agents.DDPGAgent import DDPGAgent
 from Agents.DDQNAgent import DDQNAgent
-from src.Metrics import PlotGraphs
+from src.Metrics import ResultsPlotter
 
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
@@ -66,8 +66,7 @@ def run():
     }
 
     env = gym.make('highway-with-obstructions-v0', render_mode='rgb_array')
-    # TODO: Run 3 lanes 9 obstacles again on different seeds to get a better plot
-    # TODO: Change plots to say frames, so steps * 15 (for frame count)
+
     save_dir = 'DDQN/MultiAgent/Agents=5_Lanes=2_obs=5_steps=50000'
     record_eps = True
     env = record_wrap(env, 100, save_dir) if record_eps else env
@@ -92,6 +91,7 @@ def run():
         while steps < max_steps:
             done = trunc = False
             states, infos = env.reset(seed=seed)
+            # TODO: CustomWrapper to support this
             states = torch.Tensor(np.array([s.flatten() for s in states]))
 
             episode_reward = 0
@@ -126,7 +126,7 @@ def run():
             if episode >= 100:
                 print("  - Rolling Average (100 episodes): ", np.mean(reward_history[-100:]))
 
-        graph_plotter = PlotGraphs.PlotGraphs()
+        graph_plotter = ResultsPlotter.ResultsPlotter()
         graph_plotter.plot_graph(steps_history, reward_history, "rewards", save_dir=save_dir)
         graph_plotter.plot_graph(steps_history, speed_history, "speed_history", save_dir=save_dir,
                                  labels=['Steps', 'Speed'])

@@ -1,18 +1,14 @@
 import os
 import warnings
 
-import torch
 import gymnasium as gym
 import numpy as np
 from gym.wrappers import RecordVideo
 
-# from gym.wrappers import RecordVideo
-
-from Agents.DDPGAgent import DDPGAgent
-from Agents.DDQNAgent import DDQNAgent
 from src.Agents import AgentFactory
-from src.Metrics import PlotGraphs
+from src.Metrics.ResultsPlotter import ResultsPlotter
 from src.Settings import settings
+from src.Wrappers.CustomEnvironmentWrapper import CustomEnvironmentWrapper
 
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
@@ -34,100 +30,92 @@ warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 #         }
 #     }
 
-def run():
-    env = gym.make('highway-with-obstructions-v0', render_mode='rgb_array')
-    # TODO: Run 3 lanes 9 obstacles again on different seeds to get a better plot
-    # TODO: Change plots to say frames, so steps * 15 (for frame count)
-    save_dir = 'PPO/new_attempt_lanes_obs=2_2_entropy=0.1_batch_size=32_320'
-    record_eps = False
-    env = record_wrap(env, 50, save_dir) if record_eps else env
+class SingleAgentRunner:
+    def __init__(self, env, agent):
+        self.env = env
+        self.agent = agent
+        self.steps_history = np.empty(0)
+        self.reward_history = np.empty(0)
+        self.speed_history = np.empty(0)
+        self.steps = 0
+        self.episode = 0
+        self.max_steps = settings.TRAINING_STEPS
+        self.rp = ResultsPlotter()
 
-    for seed in range(1):
-        print("\n\n------------------")
+        print("Single Agent: ", settings.AGENT_TYPE)
+        print("  - Training Steps: ", self.max_steps)
 
-        save_dir = save_dir + "/seed=" + str(seed)
-
-        agent_factory = AgentFactory()
-        agent = agent_factory.create_new_agent(env)
-
-        steps_history = np.empty(0)
-        reward_history = np.empty(0)
-        speed_history = np.empty(0)
-        steps = 0
-        episode = 0
-        max_steps = 20000
-        while steps < max_steps:
-            done = trunc = False
-            state, info = env.reset(seed=seed)
-            state = state.flatten()
-
-            if settings.AGENT_TYPE != 'ppo':
-                state = torch.Tensor(state)
+    def train(self):
+        while self.steps < self.max_steps:
+            done = False
+            state, info = self.env.reset(seed=settings.SEED)
 
             episode_reward = 0
             agent_speed = np.empty(0)
-            starting_episode_steps = steps
-            print("seed =", seed, " - Episode: ", episode)
-            while not done and not trunc:
+            starting_episode_steps = self.steps
+            print("seed =", settings.SEED, " - Episode: ", self.episode)
+            while not done:
                 if settings.AGENT_TYPE == 'ppo':
-                    action, value, probability = agent.get_action(state)
+                    action, value, probability = self.agent.get_action(state)
                 else:
-                    action, value, probability = agent.get_action(state), None, None
+                    action, value, probability = self.agent.get_action(state), None, None
 
-                next_state, reward, done, trunc, info = env.step(action)
-                next_state = next_state.flatten()
-
-                if not record_eps:
-                    env.render()
-
-                if settings.AGENT_TYPE != 'ppo':
-                    next_state = torch.Tensor(next_state)
+                next_state, reward, done, trunc, info = self.env.step(action)
 
                 if settings.AGENT_TYPE == 'ppo':
-                    agent.store_experience_in_replay_buffer(state, action, value, reward, done, probability)
+                    self.agent.store_experience_in_replay_buffer(state, action, value, reward, done, probability)
                 else:
-                    agent.store_experience_in_replay_buffer(state, action, reward, next_state, done)
+                    self.agent.store_experience_in_replay_buffer(state, action, reward, next_state, done)
 
-                agent.learn()
+                self.agent.learn()
                 state = next_state
                 episode_reward += reward
                 agent_speed = np.append(agent_speed, info["agents_speeds"][0])
-                steps += 1
-            episode += 1
-            steps_history = np.append(steps_history, steps)
-            reward_history = np.append(reward_history, episode_reward)
-            speed_history = np.append(speed_history, np.mean(agent_speed))
+                self.steps += 1
+
+            # Add the episode results to the agent's results plotter
+            self.episode += 1
+            self.rp.steps_history = np.append(self.rp.steps_history, self.steps)
+            self.rp.reward_history = np.append(self.rp.reward_history, episode_reward)
+            self.rp.speed_history = np.append(self.rp.speed_history, np.mean(agent_speed))
+
+            # Output episode rewards and overall status
             print("  - Reward: ", episode_reward)
-            print("  - Total Steps: ", steps, "/", max_steps)
-            print("  - Episode Steps: ", steps - starting_episode_steps)
-            print("  - Max Reward: ", np.max(reward_history))
-            if episode >= 100:
-                print("  - Rolling Average (100 episodes): ", np.mean(reward_history[-100:]))
+            print("  - Total Steps: ", self.steps, "/", self.max_steps)
+            print("  - Episode Steps: ", self.steps - starting_episode_steps)
+            print("  - Max Reward: ", np.max(self.rp.reward_history))
+            if self.episode >= 100:
+                print("  - Rolling Average (100 episodes): ", np.mean(self.rp.reward_history[-100:]))
 
-        graph_plotter = PlotGraphs.PlotGraphs()
-        graph_plotter.plot_graph(steps_history, reward_history, "rewards", save_dir=save_dir)
-        graph_plotter.plot_graph(steps_history, speed_history, "speed_history", save_dir=save_dir,
-                                 labels=['Steps', 'Speed'])
-        r_avg_window = 100
-        if episode >= r_avg_window:
-            graph_plotter.plot_graph(steps_history[r_avg_window - 1:],
-                                     np.convolve(reward_history, np.ones(r_avg_window) / r_avg_window, mode='valid'),
-                                     "r_avg=" + str(r_avg_window), save_dir=save_dir)
-            graph_plotter.plot_graph(steps_history[r_avg_window - 1:],
-                                     np.convolve(speed_history, np.ones(r_avg_window) / r_avg_window, mode='valid'),
-                                     "speed_history_r_avg=" + str(r_avg_window), save_dir=save_dir,
-                                     labels=['Steps', 'Speed'])
-        np.savetxt(save_dir + "/rewards.txt", (steps_history, reward_history, speed_history), delimiter=',', fmt='%d')
+    def save_final_results(self):
+        self.rp.save_final_results(self.episode)
+        print("Results saved to: ", settings.SAVE_DIR)
 
 
-def record_wrap(env, frequency, save_dir):
-    video_folder = save_dir + "/Videos"
+def run_single_agent():
+    env = initialise_env()
+
+    agent = AgentFactory.create_new_agent(env)
+    single_agent_runner = SingleAgentRunner(env, agent)
+    single_agent_runner.train()
+    single_agent_runner.save_final_results()
+
+
+def initialise_env():
+    env = gym.make('highway-with-obstructions-v0', render_mode='rgb_array')
+    env = CustomEnvironmentWrapper(env)
+    env = record_wrap(env) if settings.RECORD_EPISODES[0] else env
+    return env
+
+
+def record_wrap(env):
+    video_folder = settings.SAVE_DIR + "/Videos"
     os.makedirs(video_folder, exist_ok=True)
 
     env = RecordVideo(
         env,
         video_folder,
-        episode_trigger=lambda x: x % frequency == 0,
+        episode_trigger=lambda x: x % settings.RECORD_EPISODES[1] == 0,
         name_prefix="optimal-policy"
     )
     env.unwrapped.set_record_video_wrapper(env)
@@ -135,5 +123,4 @@ def record_wrap(env, frequency, save_dir):
 
 
 if __name__ == "__main__":
-    run()
-    print("Ended")
+    run_single_agent()
