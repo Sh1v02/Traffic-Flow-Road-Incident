@@ -6,7 +6,7 @@ class ReplayBuffer(ABC):
         self._max_size = max_size
 
     @abstractmethod
-    def add_experience(self, experience):
+    def add_experience(self, *args):
         raise NotImplementedError(
             "add_experience() has no base implementation, and must be implemented in the child class"
         )

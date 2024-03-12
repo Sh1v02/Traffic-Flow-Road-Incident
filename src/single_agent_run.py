@@ -40,8 +40,9 @@ class SingleAgentRunner:
         self.steps = 0
         self.episode = 0
         self.max_steps = settings.TRAINING_STEPS
-        self.rp = ResultsPlotter()
+        self.rp = ResultsPlotter(agent)
 
+        self.rp.save_config_file(multi_agent=False)
         print("Single Agent: ", settings.AGENT_TYPE)
         print("  - Training Steps: ", self.max_steps)
 
@@ -86,6 +87,29 @@ class SingleAgentRunner:
             print("  - Max Reward: ", np.max(self.rp.reward_history))
             if self.episode >= 100:
                 print("  - Rolling Average (100 episodes): ", np.mean(self.rp.reward_history[-100:]))
+            if self.episode >= 500:
+                print("  - Rolling Average (500 episodes): ", np.mean(self.rp.reward_history[-500:]))
+
+    def test(self):
+        done = False
+        state, info = self.env.reset(seed=settings.SEED)
+
+        episode_steps = 0
+        episode_reward = 0
+        print("-------------")
+        print("Testing optimal policy")
+        while not done:
+            if settings.AGENT_TYPE == 'ppo':
+                action, value, probability = self.agent.get_action(state)
+            else:
+                action, value, probability = self.agent.get_action(state), None, None
+
+            state, reward, done, trunc, info = self.env.step(action)
+
+            episode_reward += reward
+            episode_steps += 1
+        print(" - Steps: ", episode_steps)
+        print(" - Reward: ", episode_reward)
 
     def save_final_results(self):
         self.rp.save_final_results(self.episode)
@@ -99,6 +123,7 @@ def run_single_agent():
     single_agent_runner = SingleAgentRunner(env, agent)
     single_agent_runner.train()
     single_agent_runner.save_final_results()
+    single_agent_runner.test()
 
 
 def initialise_env():

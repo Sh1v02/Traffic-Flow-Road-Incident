@@ -40,8 +40,8 @@ class DDPGAgent:
         action = torch.tensor(self.env.action_type.bound_available_lateral_actions(action.detach().numpy()))
         return torch.clamp(action, self.action_range[0], self.action_range[1]).tolist()
 
-    def store_experience_in_replay_buffer(self, state, action, reward, next_state, done):
-        self.replay_buffer.add_experience([state, action, reward, next_state, done])
+    def store_experience_in_replay_buffer(self, *args):
+        self.replay_buffer.add_experience(*args)
 
     def update_target_network_parameters(self, tau=None):
         self.update_network_parameters(self.actor, self.target_actor, tau=tau)

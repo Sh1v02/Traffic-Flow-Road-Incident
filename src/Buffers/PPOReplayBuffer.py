@@ -13,8 +13,8 @@ class PPOReplayBuffer(ReplayBuffer):
         self.dones = []
         self.probabilities = []
 
-    def add_experience(self, experience):
-        state, action, value, reward, done, probability = experience
+    def add_experience(self, *args):
+        state, action, value, reward, done, probability = args
         self.states.append(state)
         self.actions.append(action)
         self.rewards.append(reward)

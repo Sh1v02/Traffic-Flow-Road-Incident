@@ -1,11 +1,22 @@
+from datetime import datetime
 
 AGENT_TYPE = "ppo"
 
 SEED = 0
-TRAINING_STEPS = 50_000
+TRAINING_STEPS = 100000
+RECORD_EPISODES = [True, 200]
 
-DISCOUNT_FACTOR = 0.99
+DISCOUNT_FACTOR = 0.85
 
-RECORD_EPISODES = [True, 100]
+# PPO Settings
+PPO_DISCOUNT_FACTOR = 0.85
+PPO_LR = [5e-4, 3e-4]
+PPO_BATCH_SIZE = 64
+PPO_UPDATE_FREQUENCY = 768
+PPO_GAE_LAMBDA = 0.95
+PPO_EPSILON = 0.2
+PPO_CRITIC_COEFFICIENT = 0.5
+PPO_ENTROPY_COEFFICIENT = 0.1
 
-SAVE_DIR = "PPO/gamma=0.8_batch=64_768_steps=50000"
+date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
+SAVE_DIR = AGENT_TYPE.upper() + "/NEW/100000steps/" + date_as_str

@@ -3,11 +3,13 @@ from copy import deepcopy
 
 import numpy as np
 import torch
+
+from src.Agents.Agent import Agent
 from src.Models import MultiLayerPerceptron
 from src.Buffers import UniformExperienceReplayBuffer
 
 
-class DDQNAgent:
+class DDQNAgent(Agent):
     def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss(),
                  lr=0.003, gamma=0.99, epsilon=1.0, min_epsilon=0.01, epsilon_decay=0.99,
                  update_target_network_frequency=1000, batch_size=32):
@@ -35,8 +37,8 @@ class DDQNAgent:
 
         return action
 
-    def store_experience_in_replay_buffer(self, state, action, reward, next_state, done):
-        self.replay_buffer.add_experience([state, action, reward, next_state, done])
+    def store_experience_in_replay_buffer(self, *args):
+        self.replay_buffer.add_experience(*args)
 
     def update_target_network_parameters(self):
         self.target_network.load_state_dict(self.online_network.state_dict())
@@ -56,3 +58,6 @@ class DDQNAgent:
 
         if self.steps % self.update_target_network_frequency == 0:
             self.update_target_network_parameters()
+
+    def get_agent_specific_config(self):
+        return {}

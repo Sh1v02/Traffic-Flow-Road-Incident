@@ -1,33 +1,36 @@
 import numpy as np
 import torch
 
+from src.Agents.Agent import Agent
 from src.Buffers import PPOReplayBuffer
 from src.Models import PPOActorNetwork, PPOCriticNetwork
+from src.Settings import settings
+
 
 # lr = 0.0003, 0.001
 # gamma = 0.8
 # batch_size = 5, update_frequency = 20
 # observation -> absolute = False
 
-class PPOAgent:
-    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss(),
-                 gamma=0.99, lr=0.0003, gae_lambda=0.95, policy_clip_epsilon=0.2,
-                 batch_size=32, update_frequency=320, num_epochs=10):
-        lr = 5e-4
-        gamma = 0.8
-        self.entropy_coefficient = 0.1
+# TODO: Tensorboard
+# TODO: Agent parent class (also includes static agent_specific_config to be called in the get_config_dict method)
+class PPOAgent(Agent):
+    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss(), num_epochs=10):
         self.loss = loss
-        self.gamma = gamma
-        self.lr = lr
-        self.gae_lambda = gae_lambda
-        self.policy_clip_epsilon = policy_clip_epsilon
-        self.batch_size = batch_size
-        self.update_frequency = update_frequency
         self.num_epochs = num_epochs
+        self.batch_size = settings.PPO_BATCH_SIZE
+        self.update_frequency = settings.PPO_UPDATE_FREQUENCY
+        self.gamma = settings.PPO_DISCOUNT_FACTOR
+        self.actor_lr = settings.PPO_LR[0]
+        self.critic_lr = settings.PPO_LR[-1]
+        self.gae_lambda = settings.PPO_GAE_LAMBDA
+        self.policy_clip_epsilon = settings.PPO_EPSILON
+        self.critic_coefficient = settings.PPO_CRITIC_COEFFICIENT
+        self.entropy_coefficient = settings.PPO_ENTROPY_COEFFICIENT
 
-        self.actor = PPOActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": 0.0005},
+        self.actor = PPOActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr},
                                      hidden_layer_dims=[256, 256])
-        self.critic = PPOCriticNetwork(optimiser, loss, state_dims, optimiser_args={"lr": 0.0005},
+        self.critic = PPOCriticNetwork(optimiser, loss, state_dims, optimiser_args={"lr": self.critic_lr},
                                        hidden_layer_dims=[256, 256])
         self.replay_buffer = PPOReplayBuffer()
 
@@ -44,8 +47,8 @@ class PPOAgent:
 
         return action, value, probability
 
-    def store_experience_in_replay_buffer(self, state, action, value, reward, done, probability):
-        self.replay_buffer.add_experience([state, action, value, reward, done, probability])
+    def store_experience_in_replay_buffer(self, *args):
+        self.replay_buffer.add_experience(*args)
 
     def learn(self):
         self.steps += 1
@@ -53,6 +56,7 @@ class PPOAgent:
             return
 
         for epoch in range(self.num_epochs):
+            # GAE calculation, A(t) at each time step
             # Aₜˡᵢₙ = δₜ + (γλ)δₜ₊₁ + (γλ)²δₜ₊₂ + ... + (γλ)^(T-𝑡+₁)δₜ₊(T-1)
             # δₜ = rₜ₊₁ + γV(sₜ₊₁) - V(sₜ)
 
@@ -61,11 +65,12 @@ class PPOAgent:
 
             advantages = np.empty(0, dtype=np.float32)
 
+            total_steps = len(rewards)
             # TODO: Use tensors to vectorise these calcs
-            for time_step in range(len(rewards) - 1):
+            for time_step in range(total_steps - 1):
                 gamma_gae_lambda = 1
                 current_advantage = 0
-                for t in range(time_step, len(rewards) - 1):
+                for t in range(time_step, total_steps - 1):
                     td = rewards[t] + (self.gamma * values[t + 1] * (1 - int(dones[t]))) - values[t]
                     current_advantage += gamma_gae_lambda * td
                     if dones[t] == 1:
@@ -73,9 +78,12 @@ class PPOAgent:
                     gamma_gae_lambda *= self.gamma * self.gae_lambda
                 advantages = np.append(advantages, current_advantage)
 
-            # TODO: Is it better to remove last element overall?
+            # TODO: Is it better to remove last element overall? --> can be done by returning batches in range (len - 1)
             # Account for last
             advantages = np.append(advantages, 0)
+            # Normalise advantages
+            advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+
             advantages = torch.Tensor(advantages)
             values = torch.Tensor(values)
             states = torch.Tensor(np.array(states))
@@ -92,20 +100,21 @@ class PPOAgent:
 
                 action_distribution = self.actor(batch_states)
                 new_probabilities = action_distribution.log_prob(batch_actions)
-                entropy = action_distribution.entropy()
+                entropy = action_distribution.entropy().mean()
                 probability_ratios = new_probabilities.exp() / batch_old_probabilities.exp()
 
+                # Calculate actor loss using PPO's clip function
                 unclipped = batch_advantages * probability_ratios
                 clipped = torch.clamp(probability_ratios, 1 - self.policy_clip_epsilon,
                                       1 + self.policy_clip_epsilon) * batch_advantages
                 actor_loss = -torch.min(unclipped, clipped).mean()
 
-                returns = batch_advantages + batch_values
+                # Calculate critic loss between the returns (taking advantage into account) and new network predictions
+                current_values_with_advantages = batch_advantages + batch_values
                 new_predicted_values = torch.squeeze(self.critic(batch_states))
-                critic_loss = self.loss(returns, new_predicted_values)
+                critic_loss = self.loss(current_values_with_advantages, new_predicted_values)
 
-                entropy_loss = entropy.mean()
-                final_loss = actor_loss + (critic_loss * 0.5) - (0.1 * entropy_loss)
+                final_loss = actor_loss + (self.critic_coefficient * critic_loss) - (self.entropy_coefficient * entropy)
                 self.update_networks(final_loss)
 
         self.replay_buffer.clear()
@@ -118,3 +127,14 @@ class PPOAgent:
 
         self.actor.optimiser.step()
         self.critic.optimiser.step()
+
+    def get_agent_specific_config(self):
+        return {
+            "PPO_LR": str(settings.PPO_LR),
+            "PPO_BATCH_SIZE": str(settings.PPO_BATCH_SIZE),
+            "PPO_UPDATE_FREQUENCY": str(settings.PPO_UPDATE_FREQUENCY),
+            "PPO_GAE_LAMBDA": str(settings.PPO_GAE_LAMBDA),
+            "PPO_EPSILON": str(settings.PPO_EPSILON),
+            "PPO_CRITIC_COEFFICIENT": str(settings.PPO_CRITIC_COEFFICIENT),
+            "PPO_ENTROPY_COEFFICIENT": str(settings.PPO_ENTROPY_COEFFICIENT)
+        }
