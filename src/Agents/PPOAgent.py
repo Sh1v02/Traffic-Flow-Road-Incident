@@ -28,10 +28,12 @@ class PPOAgent(Agent):
         self.critic_coefficient = settings.PPO_CRITIC_COEFFICIENT
         self.entropy_coefficient = settings.PPO_ENTROPY_COEFFICIENT
 
+        self.hidden_layer_dims = [256, 512, 256]
+        # TODO: Add entropy coefficient decay
         self.actor = PPOActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr},
-                                     hidden_layer_dims=[256, 256])
+                                     hidden_layer_dims=self.hidden_layer_dims)
         self.critic = PPOCriticNetwork(optimiser, loss, state_dims, optimiser_args={"lr": self.critic_lr},
-                                       hidden_layer_dims=[256, 256])
+                                       hidden_layer_dims=self.hidden_layer_dims)
         self.replay_buffer = PPOReplayBuffer()
 
         self.steps = 0
@@ -39,6 +41,10 @@ class PPOAgent(Agent):
     def get_action(self, state, training=True):
         state = torch.Tensor(state)
         action_distribution = self.actor(state)
+
+        if not training:
+            return torch.argmax(action_distribution.probs).item()
+
         action = action_distribution.sample()
 
         probability = torch.squeeze(action_distribution.log_prob(action)).item()
@@ -130,6 +136,7 @@ class PPOAgent(Agent):
 
     def get_agent_specific_config(self):
         return {
+            "PPO_NETWORKS": str(self.hidden_layer_dims),
             "PPO_LR": str(settings.PPO_LR),
             "PPO_BATCH_SIZE": str(settings.PPO_BATCH_SIZE),
             "PPO_UPDATE_FREQUENCY": str(settings.PPO_UPDATE_FREQUENCY),

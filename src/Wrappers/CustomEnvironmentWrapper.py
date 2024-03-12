@@ -14,7 +14,7 @@ class CustomEnvironmentWrapper(gym.Wrapper):
         if trunc:
             done = True
 
-        if not settings.RECORD_EPISODES[0]:
+        if settings.RENDER_ENVIRONMENT and not settings.RECORD_EPISODES[0]:
             self.env.render()
 
         return self._transform_state(next_state), reward, done, trunc, info

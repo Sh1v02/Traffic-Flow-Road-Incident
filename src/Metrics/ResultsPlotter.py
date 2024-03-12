@@ -53,6 +53,7 @@ class ResultsPlotter:
             "AGENT_TYPE": str(settings.AGENT_TYPE.upper()),
             "SEED": str(settings.SEED),
             "TRAINING_STEPS": str(settings.TRAINING_STEPS),
+            "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
             "DISCOUNT_FACTOR/GAMMA": settings.DISCOUNT_FACTOR
         }
         config.update(self.agent.get_agent_specific_config())
@@ -60,6 +61,7 @@ class ResultsPlotter:
         return config
 
     def save_config_file(self, multi_agent=False):
+        os.makedirs(settings.SAVE_DIR, exist_ok=True)
         save_path = settings.SAVE_DIR + "/config.txt"
         config = self.get_config_dict(multi_agent)
         config_df = pd.DataFrame(list(config.items()), columns=['Setting', 'Value'])
