@@ -12,6 +12,7 @@ from HighwayEnv.highway_env.vehicle.behavior import BrokenDownVehicle
 from HighwayEnv.highway_env.vehicle.controller import ControlledVehicle
 from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 from HighwayEnv.highway_env.vehicle.objects import Obstacle
+from src.Settings import graphics_settings
 
 Observation = np.ndarray
 
@@ -49,7 +50,7 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 "action": {
                     "type": "DiscreteMetaAction",
                 },
-                "lanes_count": 2,
+                "lanes_count": graphics_settings.LANE_COUNT,
                 "vehicles_count": 0,
                 "controlled_vehicles": 1,
                 "initial_lane_id": None,
@@ -71,8 +72,8 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 "offroad_terminal": True,
                 "simulation_frequency": 15,  # [Hz]
                 "policy_frequency": 1,  # [Hz]
-                "obstruction_count": 5,
-                "obstruction_type": "Obstacle"  # [Obstacle, BrokenDownVehicle]
+                "obstruction_count": graphics_settings.OBSTRUCTION_COUNT,
+                "obstruction_type": "BrokenDownVehicle"  # [Obstacle, BrokenDownVehicle]
             }
         )
         return config

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from src.Settings import settings
+from src.Settings import settings, graphics_settings
 
 
 class ResultsPlotter:
@@ -54,6 +54,8 @@ class ResultsPlotter:
             "SEED": str(settings.SEED),
             "TRAINING_STEPS": str(settings.TRAINING_STEPS),
             "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
+            "LANE_COUNT": str(graphics_settings.LANE_COUNT),
+            "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT),
             "DISCOUNT_FACTOR/GAMMA": settings.DISCOUNT_FACTOR
         }
         config.update(self.agent.get_agent_specific_config())
