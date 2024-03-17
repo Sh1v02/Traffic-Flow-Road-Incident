@@ -12,7 +12,7 @@ from HighwayEnv.highway_env.vehicle.behavior import BrokenDownVehicle
 from HighwayEnv.highway_env.vehicle.controller import ControlledVehicle
 from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
 from HighwayEnv.highway_env.vehicle.objects import Obstacle
-from src.Settings import graphics_settings
+from src.Utilities import graphics_settings, multi_agent_settings
 
 Observation = np.ndarray
 
@@ -43,7 +43,7 @@ class HighwayEnvWithObstructions(AbstractEnv):
                         "vx": [-20, 20],
                         "vy": [-20, 20]
                     },
-                    "absolute": True,
+                    "absolute": False,
                     "order": "sorted",
                     # "observe_intentions": True
                 },

@@ -1,4 +1,4 @@
-from src.Settings import graphics_settings
+from src.Utilities import graphics_settings, settings
 import os
 from typing import TYPE_CHECKING, Callable, List, Optional
 
@@ -40,7 +40,8 @@ class EnvViewer(object):
 
         pygame.init()
         self.button_font = pygame.font.Font(None, 20)
-        pygame.display.set_caption("Highway-env")
+        caption = "(" + settings.RUN_TYPE + " - " + settings.AGENT_TYPE.upper() + ") SAVE_DIR - " + settings.SAVE_DIR
+        pygame.display.set_caption(caption)
         panel_size = (self.config["screen_width"], self.config["screen_height"])
 
         # A display is not mandatory to draw things. Ignoring the display.set_mode()

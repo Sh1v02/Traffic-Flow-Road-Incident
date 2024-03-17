@@ -1,0 +1,2 @@
+AGENT_COUNT = 2
+WAIT_UNTIL_ALL_AGENTS_TERMINATED = [True, False] # [train, test]

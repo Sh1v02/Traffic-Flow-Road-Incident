@@ -12,6 +12,16 @@ from gym.wrappers import RecordVideo
 from matplotlib import pyplot as plt
 # from matplotlib import pyplot as plt
 
+def test():
+    while True:
+        batch_size = 5
+        num_of_states = 20
+        memory_indexes = np.arange(num_of_states)
+        np.random.shuffle(memory_indexes)
+        batches = [memory_indexes[i:i + batch_size] for i in range(0, num_of_states, batch_size)]
+
+
+test()
 from stable_baselines3 import DQN, DDPG
 
 # env = gym.make("highway-with-obstructions-v0", render_mode='rgb_array')

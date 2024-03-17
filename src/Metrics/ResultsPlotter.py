@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from src.Settings import settings, graphics_settings
+from src.Utilities import settings, graphics_settings, multi_agent_settings
 
 
 class ResultsPlotter:
@@ -34,22 +34,12 @@ class ResultsPlotter:
         np.savetxt(settings.SAVE_DIR + "/rewards.txt",
                    (self.steps_history, self.reward_history, self.speed_history), delimiter=',', fmt='%d')
 
-    @staticmethod
-    def plot_graph(x_values, y_values, name, save_dir=None, labels=None):
-        labels = labels if labels else ["Frames", "Reward"]
-        frames_per_step = 15
-        plt.figure(figsize=(8, 4))
-        # plt.plot(x_values, y_values, marker='o', linestyle='-', color='b')
-        plt.plot(x_values * 15, y_values, linestyle='-', color='b', linewidth=1.0)
-        plt.xlabel(labels[0])
-        plt.ylabel(labels[1])
-        if save_dir:
-            os.makedirs(save_dir, exist_ok=True)
-            plt.savefig(save_dir + '/' + name + '.png')
-
     def get_config_dict(self, multi_agent=False):
         config = {
             "TEST_TYPE": "SingleAgent" if not multi_agent else "MultiAgent",
+            "AGENT_COUNT": 1 if not multi_agent else multi_agent_settings.AGENT_COUNT,
+            "WAIT_UNTIL_TERMINATED": "Ignore" if not multi_agent else str(
+                multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
             "AGENT_TYPE": str(settings.AGENT_TYPE.upper()),
             "SEED": str(settings.SEED),
             "TRAINING_STEPS": str(settings.TRAINING_STEPS),
@@ -69,3 +59,17 @@ class ResultsPlotter:
         config_df = pd.DataFrame(list(config.items()), columns=['Setting', 'Value'])
         config_df.to_csv(save_path, index=False)
         print("Config Saved to: ", save_path)
+
+    @staticmethod
+    def plot_graph(x_values, y_values, name, save_dir=None, labels=None):
+        labels = labels if labels else ["Frames", "Reward"]
+        frames_per_step = 15
+        plt.figure(figsize=(8, 4))
+        # plt.plot(x_values, y_values, marker='o', linestyle='-', color='b')
+        plt.plot(x_values * 15, y_values, linestyle='-', color='b', linewidth=1.0)
+        plt.xlabel(labels[0])
+        plt.ylabel(labels[1])
+        if save_dir:
+            os.makedirs(save_dir, exist_ok=True)
+            plt.savefig(save_dir + '/' + name + '.png')
+

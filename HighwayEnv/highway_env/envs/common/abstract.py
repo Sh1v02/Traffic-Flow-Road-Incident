@@ -1,4 +1,4 @@
-from src.Settings import graphics_settings
+from src.Utilities import graphics_settings
 
 import copy
 import os

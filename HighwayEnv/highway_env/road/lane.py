@@ -1,4 +1,4 @@
-from src.Settings import graphics_settings
+from src.Utilities import graphics_settings
 from abc import ABCMeta, abstractmethod
 from typing import List, Optional, Tuple, Union
 

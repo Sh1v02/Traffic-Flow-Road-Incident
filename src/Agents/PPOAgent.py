@@ -4,7 +4,7 @@ import torch
 from src.Agents.Agent import Agent
 from src.Buffers import PPOReplayBuffer
 from src.Models import PPOActorNetwork, PPOCriticNetwork
-from src.Settings import settings
+from src.Utilities import settings
 
 
 # lr = 0.0003, 0.001
@@ -15,7 +15,8 @@ from src.Settings import settings
 # TODO: Tensorboard
 # TODO: Agent parent class (also includes static agent_specific_config to be called in the get_config_dict method)
 class PPOAgent(Agent):
-    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss(), num_epochs=10):
+    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss(), num_epochs=10,
+                 entropy_coefficient_decay=0.01):
         self.loss = loss
         self.num_epochs = num_epochs
         self.batch_size = settings.PPO_BATCH_SIZE
@@ -27,8 +28,10 @@ class PPOAgent(Agent):
         self.policy_clip_epsilon = settings.PPO_EPSILON
         self.critic_coefficient = settings.PPO_CRITIC_COEFFICIENT
         self.entropy_coefficient = settings.PPO_ENTROPY_COEFFICIENT
+        self.entropy_coefficient_decay = settings.PPO_ENTROPY_COEFFICIENT_DECAY
+        self.entropy_coefficient_min = settings.PPO_ENTROPY_COEFFICIENT_MIN
 
-        self.hidden_layer_dims = [256, 512, 256]
+        self.hidden_layer_dims = [512, 512]
         # TODO: Add entropy coefficient decay
         self.actor = PPOActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr},
                                      hidden_layer_dims=self.hidden_layer_dims)
@@ -72,7 +75,7 @@ class PPOAgent(Agent):
             advantages = np.empty(0, dtype=np.float32)
 
             total_steps = len(rewards)
-            # TODO: Use tensors to vectorise these calcs
+
             for time_step in range(total_steps - 1):
                 gamma_gae_lambda = 1
                 current_advantage = 0
@@ -124,6 +127,8 @@ class PPOAgent(Agent):
                 self.update_networks(final_loss)
 
         self.replay_buffer.clear()
+        self.entropy_coefficient = max(self.entropy_coefficient * self.entropy_coefficient_decay,
+                                       self.entropy_coefficient_min)
 
     def update_networks(self, loss):
         self.actor.zero_grad()
@@ -143,5 +148,7 @@ class PPOAgent(Agent):
             "PPO_GAE_LAMBDA": str(settings.PPO_GAE_LAMBDA),
             "PPO_EPSILON": str(settings.PPO_EPSILON),
             "PPO_CRITIC_COEFFICIENT": str(settings.PPO_CRITIC_COEFFICIENT),
-            "PPO_ENTROPY_COEFFICIENT": str(settings.PPO_ENTROPY_COEFFICIENT)
+            "PPO_ENTROPY_COEFFICIENT": str(settings.PPO_ENTROPY_COEFFICIENT),
+            "PPO_ENTROPY_COEFFICIENT_DECAY": str(settings.PPO_ENTROPY_COEFFICIENT_DECAY),
+            "PPO_ENTROPY_COEFFICIENT_MIN": str(settings.PPO_ENTROPY_COEFFICIENT_MIN)
         }
