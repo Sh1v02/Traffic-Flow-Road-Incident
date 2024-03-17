@@ -37,7 +37,11 @@ PPO_ENTROPY_COEFFICIENT_MIN = 0.001
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
 
 COLAB = False
-google_drive = "/content/drive/My Drive/Dissertation"
+
+
+
+
+GOOGLE_DRIVE_DIR = "/content/drive/My Drive/Dissertation"
 PARENT_DIR = "TESTING"
 SUB_DIR = AGENT_TYPE.upper() + "/2_lanes/1_agent/" + date_as_str
 
