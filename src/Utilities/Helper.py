@@ -33,5 +33,5 @@ class Helper:
         return env
 
     @staticmethod
-    def output_information(info):
-        print(Fore.GREEN + info + Style.RESET_ALL)
+    def output_information(info, **kwargs):
+        print(Fore.GREEN + info + Style.RESET_ALL, **kwargs)
