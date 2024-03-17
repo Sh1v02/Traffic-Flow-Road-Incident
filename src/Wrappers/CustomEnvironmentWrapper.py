@@ -1,7 +1,7 @@
 import gym
-import torch
 
-from src.Utilities import settings, multi_agent_settings
+from src.Utilities import settings
+from src.Wrappers.GPUSupport import tensor
 
 
 class CustomEnvironmentWrapper(gym.Wrapper):
@@ -33,6 +33,6 @@ class CustomEnvironmentWrapper(gym.Wrapper):
 
         # Custom processing to the state based on the type of agent (which have different networks)
         if self.agent_type == 'ddqn':
-            states = [torch.Tensor(state) for state in states] if self.is_multi_agent else torch.Tensor(states)
+            states = [tensor(state) for state in states] if self.is_multi_agent else tensor(states)
 
         return states

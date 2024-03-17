@@ -2,6 +2,8 @@ from src.Buffers.ReplayBuffer import ReplayBuffer
 
 import torch
 
+from src.Wrappers.GPUSupport import tensor
+
 
 # TODO: GPU support
 # A cyclic buffer allowing constant time complexity O(1)
@@ -23,10 +25,10 @@ class UniformExperienceReplayBuffer(ReplayBuffer):
     def add_experience(self, *args):
         state, action, reward, next_state, done = args
         self._states_memory[self._new_element_pointer] = state
-        self._actions_memory[self._new_element_pointer] = torch.tensor(action)
+        self._actions_memory[self._new_element_pointer] = tensor(action)
         self._next_states_memory[self._new_element_pointer] = next_state
-        self._rewards_memory[self._new_element_pointer] = torch.tensor(reward)
-        self._dones_memory[self._new_element_pointer] = torch.tensor(done)
+        self._rewards_memory[self._new_element_pointer] = tensor(reward)
+        self._dones_memory[self._new_element_pointer] = tensor(done)
 
         # Cyclic buffer -> replace the oldest element by overwriting its position
         self._new_element_pointer = (self._new_element_pointer + 1) % self._max_size

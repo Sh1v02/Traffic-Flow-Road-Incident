@@ -5,6 +5,7 @@ from src.Agents.Agent import Agent
 from src.Buffers import PPOReplayBuffer
 from src.Models import PPOActorNetwork, PPOCriticNetwork
 from src.Utilities import settings
+from src.Wrappers.GPUSupport import tensor
 
 
 # lr = 0.0003, 0.001
@@ -42,7 +43,7 @@ class PPOAgent(Agent):
         self.steps = 0
 
     def get_action(self, state, training=True):
-        state = torch.Tensor(state)
+        state = tensor(state)
         action_distribution = self.actor(state)
 
         if not training:
@@ -93,11 +94,11 @@ class PPOAgent(Agent):
             # Normalise advantages
             advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
-            advantages = torch.Tensor(advantages)
-            values = torch.Tensor(values)
-            states = torch.Tensor(np.array(states))
-            old_probabilities = torch.Tensor(old_probabilities)
-            actions = torch.Tensor(actions)
+            advantages = tensor(advantages)
+            values = tensor(values)
+            states = tensor(np.array(states))
+            old_probabilities = tensor(old_probabilities)
+            actions = tensor(actions)
 
             # TODO: Vectorise this
             for batch in batches:
