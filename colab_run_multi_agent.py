@@ -9,11 +9,11 @@ warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
 
 def run():
-    settings.RUN_TYPE = "MultiAgent"
-    settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
     settings.COLAB = True
     settings.RENDER_ENVIRONMENT = False
     settings.PARENT_DIR = settings.GOOGLE_DRIVE_DIR
+    settings.RUN_TYPE = "MultiAgent"
+    settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
 
     # Multi - agent environment configuration
     config = {

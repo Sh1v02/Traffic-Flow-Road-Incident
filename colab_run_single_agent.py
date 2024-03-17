@@ -5,11 +5,11 @@ from src.Utilities.Helper import Helper
 
 
 def run_single_agent():
-    settings.RUN_TYPE = "SingleAgent"
-    settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
     settings.COLAB = True
     settings.RENDER_ENVIRONMENT = False
     settings.PARENT_DIR = settings.GOOGLE_DRIVE_DIR
+    settings.RUN_TYPE = "SingleAgent"
+    settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
 
     env = Helper.initialise_env()
     # TODO: Also record every single one of these? put in separate optimal_policy subdirectory?
