@@ -8,4 +8,6 @@ def optimise(torch_object):
 
 
 def tensor(*args, **kwargs):
+    if "dtype" not in kwargs:
+        kwargs["dtype"] = torch.float32
     return torch.tensor(*args, **kwargs).to(DEVICE)
