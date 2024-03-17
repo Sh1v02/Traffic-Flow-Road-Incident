@@ -7,7 +7,7 @@ gymnasium
 Traffic-Flow-Road-Incident/HighwayEnv/
 kiwisolver
 matplotlib
-numpy=1.2.4
+numpy==1.24.0
 packaging
 pandas
 pillow

@@ -7,6 +7,7 @@ from src.Utilities.Helper import Helper
 def run_single_agent():
     settings.RUN_TYPE = "SingleAgent"
     settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
+    settings.COLAB = True
 
     env = Helper.initialise_env()
     # TODO: Also record every single one of these? put in separate optimal_policy subdirectory?
