@@ -42,9 +42,9 @@ COLAB = False
 
 
 
-GOOGLE_DRIVE_DIR = "/content/drive/My Drive/Dissertation"
+GOOGLE_DRIVE_DIR = "/content/drive/My Drive/Dissertation/Results"
 PARENT_DIR = "TESTING"
-SUB_DIR = AGENT_TYPE.upper() + "/2_lanes/1_agent/" + date_as_str
+SUB_DIR = AGENT_TYPE.upper() + "/" + date_as_str
 
 
 
