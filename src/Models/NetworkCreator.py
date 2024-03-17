@@ -1,5 +1,7 @@
 from torch import nn
 
+from src.Wrappers.GPUSupport import optimise
+
 
 class NetworkCreator(nn.Module):
     def __init__(self, optimiser, loss, input_dims, output_dims, hidden_layer_dims=None, optimiser_args=None):
@@ -17,6 +19,7 @@ class NetworkCreator(nn.Module):
         self.tanh = nn.Tanh()
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=-1)
+        optimise(self)
 
     # Creates a dynamically sized network based on the number of hidden layers specified, + input and output layers
     # Returns a neural network, without a final activation function -> this is added in each network's forward()
