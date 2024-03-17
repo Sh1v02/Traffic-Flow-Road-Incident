@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from torch import nn
 
 from src.Wrappers.GPUSupport import optimise
@@ -31,4 +33,7 @@ class NetworkCreator(nn.Module):
             layers.append(nn.ReLU())
 
         return nn.Sequential(*layers[:-1])
+
+    def deep_copy_network(self):
+        return optimise(deepcopy(self))
 
