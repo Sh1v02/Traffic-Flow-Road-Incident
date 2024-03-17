@@ -12,6 +12,7 @@ LOG_TENSORBOARD = False
 DISCOUNT_FACTOR = 0.85
 
 # --------------------------- PPO Settings ---------------------------
+PPO_NETWORK_DIMS = [256, 256, 256]
 PPO_DISCOUNT_FACTOR = 0.85
 PPO_LR = [5e-4, 3e-4]
 PPO_BATCH_SIZE = 32

@@ -31,7 +31,7 @@ class PPOAgent(Agent):
         self.entropy_coefficient_decay = settings.PPO_ENTROPY_COEFFICIENT_DECAY
         self.entropy_coefficient_min = settings.PPO_ENTROPY_COEFFICIENT_MIN
 
-        self.hidden_layer_dims = [512, 512]
+        self.hidden_layer_dims = settings.PPO_NETWORK_DIMS
         # TODO: Add entropy coefficient decay
         self.actor = PPOActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr},
                                      hidden_layer_dims=self.hidden_layer_dims)
@@ -141,7 +141,7 @@ class PPOAgent(Agent):
 
     def get_agent_specific_config(self):
         return {
-            "PPO_NETWORKS": str(self.hidden_layer_dims),
+            "PPO_NETWORK_DIMS": str(self.hidden_layer_dims),
             "PPO_LR": str(settings.PPO_LR),
             "PPO_BATCH_SIZE": str(settings.PPO_BATCH_SIZE),
             "PPO_UPDATE_FREQUENCY": str(settings.PPO_UPDATE_FREQUENCY),
