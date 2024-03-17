@@ -3,6 +3,7 @@ from colorama import Fore, Style
 
 from src.AgentRunners import AgentRunner
 from src.Utilities import settings
+from src.Utilities.Helper import Helper
 
 
 class SingleAgentRunner(AgentRunner):
@@ -10,10 +11,11 @@ class SingleAgentRunner(AgentRunner):
         super().__init__(env, test_env, agent, multi_agent=False)
         self.agent = agent
 
-        print("Single Agent: ", settings.AGENT_TYPE)
-        print("  - Training Steps: ", self.max_steps)
+        Helper.output_information("Single Agent: " + settings.AGENT_TYPE)
+        Helper.output_information("  - Training Steps: " + str(self.max_steps))
 
     def train(self):
+        print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
             state, info = self.env.reset(seed=settings.SEED)

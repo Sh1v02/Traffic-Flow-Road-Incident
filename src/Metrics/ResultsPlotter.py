@@ -5,6 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from src.Utilities import settings, graphics_settings, multi_agent_settings
+from src.Utilities.Helper import Helper
 
 
 class ResultsPlotter:
@@ -58,7 +59,7 @@ class ResultsPlotter:
         config = self.get_config_dict(multi_agent)
         config_df = pd.DataFrame(list(config.items()), columns=['Setting', 'Value'])
         config_df.to_csv(save_path, index=False)
-        print("Config Saved to: ", save_path)
+        Helper.output_information("Config Saved to: " + save_path)
 
     @staticmethod
     def plot_graph(x_values, y_values, name, save_dir=None, labels=None):

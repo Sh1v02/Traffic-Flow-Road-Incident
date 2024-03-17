@@ -1,6 +1,7 @@
 import torch
 from src.Models import DDPGActorNetwork, DDPGCriticNetwork
 from src.Buffers import UniformExperienceReplayBuffer
+from src.Wrappers.GPUSupport import optimise, tensor
 
 
 class DDPGAgent:
@@ -36,9 +37,9 @@ class DDPGAgent:
         if not training:
             return action
 
-        action += torch.normal(mean=0.0, std=self.noise, size=(self.action_dims,))
-        action = torch.tensor(self.env.action_type.bound_available_lateral_actions(action.detach().numpy()))
-        return torch.clamp(action, self.action_range[0], self.action_range[1]).tolist()
+        action += optimise(torch.normal(mean=0.0, std=self.noise, size=(self.action_dims,)))
+        action = tensor(self.env.action_type.bound_available_lateral_actions(action.detach().numpy()))
+        return optimise(torch.clamp(action, self.action_range[0], self.action_range[1])).tolist()
 
     def store_experience_in_replay_buffer(self, *args):
         self.replay_buffer.add_experience(*args)
@@ -51,7 +52,6 @@ class DDPGAgent:
     # This becomes a soft update for τ < 1
     def update_network_parameters(self, network, target_network, tau=None):
         tau = tau if tau else self.tau
-        # all(torch.equal(self.actor.state_dict()[key], self.target_actor.state_dict()[key]) for key in self.actor.state_dict())
         for network_param, target_network_param in zip(network.state_dict().values(),
                                                        target_network.state_dict().values()):
             target_network_param.data.copy_((tau * network_param.data) + ((1.0 - tau) * target_network_param.data))

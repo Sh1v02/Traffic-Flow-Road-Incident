@@ -1,9 +1,9 @@
 import numpy as np
-import tensorflow as tf
 from colorama import Fore, Style
 
 from src.AgentRunners import AgentRunner
 from src.Utilities import settings, multi_agent_settings
+from src.Utilities.Helper import Helper
 
 
 class MultiAgentRunner(AgentRunner):
@@ -14,10 +14,11 @@ class MultiAgentRunner(AgentRunner):
         self.agent_count = len(agents)
         self.until_all_done = True
 
-        print("Multi Agent: ", settings.AGENT_TYPE)
-        print("  - Training Steps: ", self.max_steps)
+        Helper.output_information("Multi Agent: " + settings.AGENT_TYPE)
+        Helper.output_information("  - Training Steps: " + str(self.max_steps))
 
     def train(self):
+        print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
             previous_dones = tuple(False for _ in range(self.agent_count))

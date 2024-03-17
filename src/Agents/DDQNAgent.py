@@ -7,6 +7,7 @@ import torch
 from src.Agents.Agent import Agent
 from src.Models import MultiLayerPerceptron
 from src.Buffers import UniformExperienceReplayBuffer
+from src.Wrappers.GPUSupport import optimise
 
 
 class DDQNAgent(Agent):
@@ -22,8 +23,8 @@ class DDQNAgent(Agent):
         self.replay_buffer = UniformExperienceReplayBuffer(state_dims, 1, 10000, actions_type=torch.int32)
 
         self.online_network = MultiLayerPerceptron(optimiser, loss, state_dims, action_dims,
-                                                   optimiser_args={"lr": lr}, hidden_layer_dims=256)
-        self.target_network = deepcopy(self.online_network)
+                                                   optimiser_args={"lr": lr}, hidden_layer_dims=[256, 256])
+        self.target_network = optimise(deepcopy(self.online_network))
 
         self.update_target_network_frequency = update_target_network_frequency
         self.steps = 0

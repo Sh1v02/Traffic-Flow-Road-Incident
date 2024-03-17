@@ -6,6 +6,8 @@ import tensorflow as tf
 
 from src.Metrics.ResultsPlotter import ResultsPlotter
 from src.Utilities import settings
+from src.Utilities.Constants import DEVICE
+from src.Utilities.Helper import Helper
 
 
 class AgentRunner(ABC):
@@ -20,10 +22,11 @@ class AgentRunner(ABC):
         self.rp = ResultsPlotter(agent)
         self.rp.save_config_file(multi_agent=multi_agent)
 
+        Helper.output_information("Device: " + DEVICE)
+
         if settings.LOG_TENSORBOARD:
             log_dir = settings.SAVE_DIR + "/Tensorboard"
             self.summary_writer = tf.summary.create_file_writer(log_dir)
-
             with self.summary_writer.as_default():
                 tf.summary.text("Config", json.dumps(self.rp.get_config_dict(), indent='\n'), step=0)
 

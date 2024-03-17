@@ -1,6 +1,7 @@
 import os
 
 import gymnasium as gym
+from colorama import Fore, Style
 from gym.wrappers import RecordVideo
 
 from src.Utilities import settings
@@ -30,3 +31,7 @@ class Helper:
         )
         env.unwrapped.set_record_video_wrapper(env)
         return env
+
+    @staticmethod
+    def output_information(info):
+        print(Fore.GREEN + info + Style.RESET_ALL)
