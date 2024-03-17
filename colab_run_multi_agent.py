@@ -8,7 +8,6 @@ from src.Utilities.Helper import Helper
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
 
-
 def run():
     settings.RUN_TYPE = "MultiAgent"
     settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
