@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from colorama import Fore, Style
 
@@ -15,6 +17,7 @@ class SingleAgentRunner(AgentRunner):
         Helper.output_information("  - Training Steps: " + str(self.max_steps))
 
     def train(self):
+        self.start_time = time.time()
         print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False

@@ -1,5 +1,6 @@
 import json
 from abc import ABC, abstractmethod
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -19,6 +20,8 @@ class AgentRunner(ABC):
         self.episode = 0
         self.max_steps = settings.TRAINING_STEPS
 
+        self.start_time = time.time()
+
         self.rp = ResultsPlotter(agent)
         self.rp.save_config_file(multi_agent=multi_agent)
 
@@ -31,6 +34,7 @@ class AgentRunner(ABC):
                 tf.summary.text("Config", json.dumps(self.rp.get_config_dict(), indent='\n'), step=0)
 
     def output_episode_results(self, episode_reward, episode_steps):
+        self.output_remaining_time(100)
         # Output episode rewards and overall status
         print("Episode: ", self.episode)
         print("  - Reward: ", episode_reward)
@@ -65,6 +69,14 @@ class AgentRunner(ABC):
     def save_final_results(self):
         self.rp.save_final_results(self.episode)
         print("Results saved to: ", settings.SAVE_DIR)
+
+    def output_remaining_time(self, steps_to_estimate_from=1000):
+        if self.steps >= steps_to_estimate_from:
+            time_so_far = time.time() - self.start_time
+            multiplier = (self.max_steps - self.steps) / self.steps
+            time_remaining = time_so_far * multiplier
+            Helper.output_information("Estimated Time Remaining: " + str(time_remaining / 60) + " minutes = " + str(
+                time_remaining / 3600) + " hours")
 
     @abstractmethod
     def train(self):
