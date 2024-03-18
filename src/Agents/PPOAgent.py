@@ -143,6 +143,7 @@ class PPOAgent(Agent):
     def get_agent_specific_config(self):
         return {
             "PPO_NETWORK_DIMS": str(self.hidden_layer_dims),
+            "PPO_DISCOUNT_FACTOR/GAMMA": str(settings.PPO_DISCOUNT_FACTOR),
             "PPO_LR": str(settings.PPO_LR),
             "PPO_BATCH_SIZE": str(settings.PPO_BATCH_SIZE),
             "PPO_UPDATE_FREQUENCY": str(settings.PPO_UPDATE_FREQUENCY),
