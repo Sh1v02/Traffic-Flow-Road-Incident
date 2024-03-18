@@ -13,12 +13,12 @@ if __name__ == "__main__":
 
     # ****************** CUSTOM ARGUMENTS ***************************
     if len(sys.argv) > 1:
-        settings.PPO_ENTROPY_COEFFICIENT = sys.argv[1]
-        settings.PPO_ENTROPY_COEFFICIENT_DECAY = sys.argv[2]
+        settings.PPO_ENTROPY_COEFFICIENT = float(sys.argv[1])
+        settings.PPO_ENTROPY_COEFFICIENT_DECAY = float(sys.argv[2])
 
-        Helper.output_information("Testing with ENTROPY_COEFFICIENT: " + settings.PPO_ENTROPY_COEFFICIENT,
+        Helper.output_information("Testing with ENTROPY_COEFFICIENT: " + str(settings.PPO_ENTROPY_COEFFICIENT),
                                   file=sys.stderr)
-        Helper.output_information("Testing with ENTROPY_DECAY: " + settings.PPO_ENTROPY_COEFFICIENT_DECAY,
+        Helper.output_information("Testing with ENTROPY_DECAY: " + str(settings.PPO_ENTROPY_COEFFICIENT_DECAY),
                                   file=sys.stderr)
 
         # ***************************************************************
