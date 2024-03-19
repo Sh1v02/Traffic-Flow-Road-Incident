@@ -2,7 +2,7 @@ from src.Buffers.ReplayBuffer import ReplayBuffer
 
 import torch
 
-from src.Wrappers.GPUSupport import tensor
+from src.Wrappers.GPUSupport import tensor, optimise
 
 
 # TODO: GPU support
@@ -12,11 +12,11 @@ class UniformExperienceReplayBuffer(ReplayBuffer):
         super().__init__(max_size)
 
         # Memory tensors
-        self._states_memory = torch.zeros((max_size, state_dims))
-        self._actions_memory = torch.zeros((max_size, action_dims), dtype=actions_type)
-        self._next_states_memory = torch.zeros((max_size, state_dims))
-        self._rewards_memory = torch.zeros((max_size, 1))
-        self._dones_memory = torch.zeros((max_size, 1))
+        self._states_memory = optimise(torch.zeros((max_size, state_dims)))
+        self._actions_memory = optimise(torch.zeros((max_size, action_dims), dtype=actions_type))
+        self._next_states_memory = optimise(torch.zeros((max_size, state_dims)))
+        self._rewards_memory = optimise(torch.zeros((max_size, 1)))
+        self._dones_memory = optimise(torch.zeros((max_size, 1)))
 
         self._new_element_pointer = 0
         self.size = 0
