@@ -1,6 +1,6 @@
 from datetime import datetime
 
-AGENT_TYPE = "ddqn"
+AGENT_TYPE = "ppo"
 
 SEED = 4
 PLOT_STEPS_FREQUENCY = 25
