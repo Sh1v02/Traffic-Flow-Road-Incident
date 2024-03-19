@@ -46,8 +46,7 @@ class ResultsPlotter:
             "TRAINING_STEPS": str(settings.TRAINING_STEPS),
             "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
             "LANE_COUNT": str(graphics_settings.LANE_COUNT),
-            "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT),
-            "DISCOUNT_FACTOR/GAMMA": settings.DISCOUNT_FACTOR
+            "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT)
         }
         config.update(self.agent.get_agent_specific_config())
 

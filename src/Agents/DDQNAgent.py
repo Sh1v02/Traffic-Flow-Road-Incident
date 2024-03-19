@@ -6,25 +6,25 @@ import torch
 from src.Agents.Agent import Agent
 from src.Buffers import UniformExperienceReplayBuffer
 from src.Models import MultiLayerPerceptron
+from src.Utilities import settings
 
 
 class DDQNAgent(Agent):
-    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss(),
-                 lr=0.003, gamma=0.99, epsilon=1.0, min_epsilon=0.01, epsilon_decay=0.99,
-                 update_target_network_frequency=1000, batch_size=32):
+    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss()):
         self.action_dims = action_dims
-        self.gamma = gamma
-        self.epsilon = epsilon
-        self.min_epsilon = min_epsilon
-        self.epsilon_decay = epsilon_decay
-        self.batch_size = batch_size
+        self.gamma = settings.DDQN_DISCOUNT_FACTOR
+        self.epsilon = settings.DDQN_EPSILON
+        self.epsilon_decay = settings.DDQN_EPSILON_DECAY
+        self.min_epsilon = settings.DDQN_MIN_EPSILON
+        self.batch_size = settings.DDQN_BATCH_SIZE
+        self.update_target_network_frequency = settings.DDQN_UPDATE_TARGET_NETWORK_FREQUENCY
         self.replay_buffer = UniformExperienceReplayBuffer(state_dims, 1, 10000, actions_type=torch.int32)
 
         self.online_network = MultiLayerPerceptron(optimiser, loss, state_dims, action_dims,
-                                                   optimiser_args={"lr": lr}, hidden_layer_dims=[256, 256])
+                                                   optimiser_args={"lr": settings.DDQN_LR},
+                                                   hidden_layer_dims=settings.DDQN_NETWORK_DIMS)
         self.target_network = self.online_network.deep_copy_network()
 
-        self.update_target_network_frequency = update_target_network_frequency
         self.steps = 0
 
     # epsilon-greedy action selection
@@ -59,4 +59,13 @@ class DDQNAgent(Agent):
             self.update_target_network_parameters()
 
     def get_agent_specific_config(self):
-        return {}
+        return {
+            "DDQN_NETWORK_DIMS": str(settings.DDQN_NETWORK_DIMS),
+            "DDQN_DISCOUNT_FACTOR/GAMMA": str(settings.DDQN_DISCOUNT_FACTOR),
+            "DDQN_LR": str(settings.DDQN_LR),
+            "DDQN_EPSILON": str(settings.DDQN_EPSILON),
+            "DDQN_EPSILON_DECAY": str(settings.DDQN_EPSILON_DECAY),
+            "DDQN_MIN_EPSILON": str(settings.DDQN_MIN_EPSILON),
+            "DDQN_BATCH_SIZE": str(settings.DDQN_BATCH_SIZE),
+            "DDQN_UPDATE_TARGET_NETWORK_FREQUENCY": str(settings.DDQN_UPDATE_TARGET_NETWORK_FREQUENCY)
+        }

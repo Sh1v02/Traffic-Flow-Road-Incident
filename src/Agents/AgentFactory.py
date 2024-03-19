@@ -16,8 +16,7 @@ class AgentFactory:
         action_dims = env.action_space[0].n if is_multi_agent else env.action_space.n
 
         if agent_type == "ddqn":
-            return DDQNAgent(state_dims, action_dims, batch_size=32,
-                             update_target_network_frequency=50, lr=0.0005, gamma=0.8)
+            return DDQNAgent(state_dims, action_dims)
         if agent_type == "ppo":
             return PPOAgent(state_dims, action_dims)
         if agent_type == "ddpg":
