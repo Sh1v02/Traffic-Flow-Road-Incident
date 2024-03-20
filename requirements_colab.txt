@@ -22,5 +22,5 @@ tzdata
 
 torch
 tensorflow
-gym<=0.25.2
+gym==0.26.2
 colorama
