@@ -1,12 +1,12 @@
 from datetime import datetime
 
-AGENT_TYPE = "ddqn"
+AGENT_TYPE = "ppo"
 
 SEED = 4
-PLOT_STEPS_FREQUENCY = 25
-TRAINING_STEPS = 50_000
-RENDER_ENVIRONMENT = True
-RECORD_EPISODES = [False, 500]
+PLOT_STEPS_FREQUENCY = 50
+TRAINING_STEPS = 100_000
+RENDER_ENVIRONMENT = False
+RECORD_EPISODES = [True, 250]
 LOG_TENSORBOARD = False
 
 # -------------------------- DDQN Settings --------------------------
@@ -20,19 +20,20 @@ DDQN_BATCH_SIZE = 32
 DDQN_UPDATE_TARGET_NETWORK_FREQUENCY = 50
 
 # TODO: Test PPO_NETWORK_DIMS
-# TODO: Rightmost lane reward test (remove it?)
+# TODO: Rightmost lane reward test (remove it?) -> if i do note that, is there really a need for the faster lanes if all
+#   cars are coordinating well?
 # --------------------------- PPO Settings ---------------------------
-PPO_NETWORK_DIMS = [256, 256, 256]
+PPO_NETWORK_DIMS = [256, 256, 256, 256]
 PPO_LR = [5e-4, 3e-4]
-PPO_DISCOUNT_FACTOR = 0.85
+PPO_DISCOUNT_FACTOR = 0.9
 PPO_GAE_LAMBDA = 0.95
 PPO_EPSILON = 0.2
 PPO_CRITIC_COEFFICIENT = 1
 PPO_ENTROPY_COEFFICIENT = 0.1
-PPO_ENTROPY_COEFFICIENT_DECAY = 1
+PPO_ENTROPY_COEFFICIENT_DECAY = 0.999
 PPO_ENTROPY_COEFFICIENT_MIN = 0.001
-PPO_BATCH_SIZE = 32
-PPO_UPDATE_FREQUENCY = 320
+PPO_BATCH_SIZE = 64
+PPO_UPDATE_FREQUENCY = 768
 
 
 
