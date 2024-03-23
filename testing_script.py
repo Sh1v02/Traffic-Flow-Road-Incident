@@ -5,6 +5,7 @@ from multiprocessing import Process
 from multiprocessing import Lock
 
 from colab_run_single_agent import run_single_agent
+from colab_run_multi_agent import run_multi_agent
 from src.Utilities import settings
 from src.Utilities.Helper import Helper
 
@@ -24,6 +25,6 @@ if __name__ == "__main__":
         # ***************************************************************
 
     lock = Lock()
-    process = Process(target=run_single_agent(), args=(lock,))
+    process = Process(target=run_multi_agent(), args=(lock,))
     process.start()
     process.join()

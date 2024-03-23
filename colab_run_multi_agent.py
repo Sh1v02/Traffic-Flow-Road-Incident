@@ -8,7 +8,7 @@ from src.Utilities.Helper import Helper
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
 
-def run():
+def run_multi_agent():
     settings.COLAB = True
     settings.RENDER_ENVIRONMENT = False
     settings.PARENT_DIR = settings.GOOGLE_DRIVE_DIR
@@ -58,5 +58,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    run_multi_agent()
     print("Multi Agent Run Ended")
