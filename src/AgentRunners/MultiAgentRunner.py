@@ -24,7 +24,6 @@ class MultiAgentRunner(AgentRunner):
         print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
-            previous_dones = tuple(False for _ in range(self.agent_count))
             states, infos = self.env.reset(seed=settings.SEED)
 
             episode_reward = 0
@@ -49,9 +48,11 @@ class MultiAgentRunner(AgentRunner):
                 if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
                     done = all(dones)
 
+
                 for i in range(self.agent_count):
                     # TODO: Should the agent be adding to the experience buffer if they remain in a terminal state?
-                    if previous_dones[i]:
+                    if (infos["agents_previous_dones"][i]
+                            and multi_agent_settings.DEATH_HANDLING.lower() == "stop_adding"):
                         continue
                     if settings.AGENT_TYPE.lower() == "ppo":
                         self.agents[i].store_experience_in_replay_buffer(states[i], actions[i], values[i], rewards[i],
@@ -68,7 +69,6 @@ class MultiAgentRunner(AgentRunner):
 
                 episode_reward += team_reward
                 states = next_states
-                previous_dones = dones
                 self.steps += 1
             self.episode += 1
 

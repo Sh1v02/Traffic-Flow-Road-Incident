@@ -146,24 +146,29 @@ class HighwayEnvWithObstructions(AbstractEnv):
         :param action: the last action performed
         :return: the corresponding reward
         """
+        # Only return a negative reward when the vehicle initially crashes, otherwise return 0 (death mask it)
+        if vehicle.crashed and vehicle.was_already_crashed:
+            return 0.0
+        elif vehicle.crashed:
+            return -1.0
+
         rewards = self._agent_rewards(vehicle)
         if rewards["on_road_reward"] == 0.0:
             return -15.0
         reward = sum(
             self.config.get(name, 0) * reward for name, reward in rewards.items()
         )
-        # reward = self.config["arrived_reward"] if rewards["arrived_reward"] else reward
-        # reward *= rewards["on_road_reward"]
+
         if self.config["normalize_reward"]:
             reward = utils.lmap(
                 reward,
-                [self.config["collision_reward"],
+                [self.config["collision_reward"],  # Note this will always be 0
                  # self.config["lane_centering_reward"],
                  # self.config["arrived_reward]],
                  self.config["high_speed_reward"] + self.config["right_lane_reward"]],
                 [0, 1],
             )
-        reward *= rewards["on_road_reward"]
+        # reward *= rewards["on_road_reward"]
         return reward
 
     def _agent_rewards(self, vehicle: Vehicle) -> Dict[Text, float]:
@@ -215,6 +220,10 @@ class HighwayEnvWithObstructions(AbstractEnv):
         """The episode is over when a collision occurs or when the vehicle is offroad."""
         return vehicle.crashed or (self.config["offroad_terminal"] and not vehicle.on_road)
 
+    def _agent_was_already_terminal(self, vehicle: Vehicle) -> bool:
+        """The episode is over when a collision occurs or when the vehicle is offroad."""
+        return vehicle.was_already_crashed
+
     def _is_truncated(self) -> bool:
         """The episode is truncated if the time limit is reached."""
         return self.time >= self.config["duration"]
@@ -225,6 +234,10 @@ class HighwayEnvWithObstructions(AbstractEnv):
             "agents_actions": action,
             "agents_rewards": tuple(self._agent_reward(vehicle) for vehicle in self.controlled_vehicles),
             "agents_dones": tuple(self._agent_is_terminal(vehicle) for vehicle in self.controlled_vehicles),
+            "agents_previous_dones": tuple(self._agent_was_already_terminal(vehicle) for vehicle in
+                                                 self.controlled_vehicles),
             "agents_speeds": tuple(vehicle.speed for vehicle in self.controlled_vehicles)
         }
+        for vehicle in self.controlled_vehicles:
+            vehicle.was_already_crashed = vehicle.crashed
         return info
