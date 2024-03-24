@@ -6,7 +6,7 @@ SEED = 4
 PLOT_STEPS_FREQUENCY = 25
 TRAINING_STEPS = 100_000
 RENDER_ENVIRONMENT = False
-RECORD_EPISODES = [True, 250]
+RECORD_EPISODES = [True, 500]
 LOG_TENSORBOARD = False
 
 # -------------------------- DDQN Settings --------------------------
@@ -44,7 +44,7 @@ PPO_UPDATE_FREQUENCY = 768
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
 
 GOOGLE_DRIVE_DIR = "/content/drive/My Drive/Dissertation/Results"
-PARENT_DIR = ""
+LOCAL_DIR = "Results"
 SUB_DIR = AGENT_TYPE.upper() + "/" + date_as_str
 
 

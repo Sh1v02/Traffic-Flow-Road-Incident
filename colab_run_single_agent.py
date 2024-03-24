@@ -1,26 +1,15 @@
-from src.AgentRunners import SingleAgentRunner
-from src.Agents import AgentFactory
 from src.Utilities import settings
-from src.Utilities.Helper import Helper
+from src.single_agent_run import run_single_agent
 
 
-def run_single_agent():
+def configure_single_agent_on_colab():
     settings.COLAB = True
     settings.RENDER_ENVIRONMENT = False
-    settings.PARENT_DIR = settings.GOOGLE_DRIVE_DIR
     settings.RUN_TYPE = "SingleAgent"
-    settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
+    settings.SAVE_DIR = settings.GOOGLE_DRIVE_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
 
-    env = Helper.initialise_env()
-    # TODO: Also record every single one of these? put in separate optimal_policy subdirectory?
-    test_env = Helper.initialise_env(record_env=False)
-
-    agent = AgentFactory.create_new_agent(env)
-    single_agent_runner = SingleAgentRunner(env, test_env, agent)
-    single_agent_runner.train()
-    single_agent_runner.save_final_results()
-    single_agent_runner.test()
+    run_single_agent()
 
 
 if __name__ == "__main__":
-    run_single_agent()
+    configure_single_agent_on_colab()

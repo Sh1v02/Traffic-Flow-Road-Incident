@@ -8,11 +8,7 @@ from src.Utilities.Helper import Helper
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
 
-
-def run():
-    settings.RUN_TYPE = "MultiAgent"
-    settings.SAVE_DIR = settings.PARENT_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
-
+def run_multi_agent():
     # Multi - agent environment configuration
     config = {
         "controlled_vehicles": multi_agent_settings.AGENT_COUNT,
@@ -45,8 +41,7 @@ def run():
         }
     }
 
-    env = Helper.initialise_env(config=config)
-    test_env = Helper.initialise_env(config=config, record_env=False)
+    env, test_env = Helper.create_environments(config)
 
     replay_buffer = None
     if multi_agent_settings.SHARED_REPLAY_BUFFER:
@@ -59,6 +54,13 @@ def run():
     multi_agent_runner.test()
 
 
+def configure_multi_agent_locally():
+    settings.RUN_TYPE = "MultiAgent"
+    settings.SAVE_DIR = settings.LOCAL_DIR + "/" + settings.RUN_TYPE + "/" + settings.SUB_DIR
+
+    run_multi_agent()
+
+
 if __name__ == "__main__":
-    run()
+    configure_multi_agent_locally()
     print("Multi Agent Run Ended")
