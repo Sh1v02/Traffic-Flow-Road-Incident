@@ -48,6 +48,8 @@ class MultiAgentRunner(AgentRunner):
                 if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
                     done = all(dones)
 
+                if multi_agent_settings.USE_TEAM_SPIRIT:
+                    rewards = self.calculate_team_spirit_rewards(rewards, team_reward)
 
                 for i in range(self.agent_count):
                     # TODO: Should the agent be adding to the experience buffer if they remain in a terminal state?
@@ -103,3 +105,7 @@ class MultiAgentRunner(AgentRunner):
         print(Fore.GREEN + "-------------\n" + Style.RESET_ALL)
 
         return episode_reward, avg_speed
+
+    def calculate_team_spirit_rewards(self, individual_rewards, team_reward, tau=0.3):
+        team_spirited_rewards = tuple(((1 - tau) * reward) + (tau * team_reward) for reward in individual_rewards)
+        return team_spirited_rewards
