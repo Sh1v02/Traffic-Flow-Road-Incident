@@ -31,6 +31,7 @@ def run():
                     "vx": [-20, 20],
                     "vy": [-20, 20]
                 },
+                # TODO: Try with False! (MAYBE CHANGE NORMALIZE TOO)
                 "absolute": True,
                 "order": "sorted",
             },
@@ -47,7 +48,10 @@ def run():
     env = Helper.initialise_env(config=config)
     test_env = Helper.initialise_env(config=config, record_env=False)
 
-    agents = [AgentFactory.create_new_agent(env) for _ in range(multi_agent_settings.AGENT_COUNT)]
+    replay_buffer = None
+    if multi_agent_settings.SHARED_REPLAY_BUFFER:
+        replay_buffer = AgentFactory.create_shared_replay_buffer()
+    agents = [AgentFactory.create_new_agent(env, replay_buffer) for _ in range(multi_agent_settings.AGENT_COUNT)]
 
     multi_agent_runner = MultiAgentRunner(env, test_env, agents)
     multi_agent_runner.train()

@@ -11,7 +11,7 @@ from src.Utilities.Helper import Helper
 class MultiAgentRunner(AgentRunner):
     def __init__(self, env, test_env, agents):
         # Only pass one agent instance in, just to give it a reference agent type to call methods from
-        super().__init__(env, test_env, agents[0], multi_agent=True)
+        super().__init__(env, test_env, agents[0])
         self.agents = agents
         self.agent_count = len(agents)
         self.until_all_done = True
@@ -48,7 +48,7 @@ class MultiAgentRunner(AgentRunner):
                 if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
                     done = all(dones)
 
-                if multi_agent_settings.USE_TEAM_SPIRIT:
+                if multi_agent_settings.TEAM_SPIRIT[0]:
                     rewards = self.calculate_team_spirit_rewards(rewards, team_reward)
 
                 for i in range(self.agent_count):
@@ -106,6 +106,8 @@ class MultiAgentRunner(AgentRunner):
 
         return episode_reward, avg_speed
 
-    def calculate_team_spirit_rewards(self, individual_rewards, team_reward, tau=0.3):
+    @staticmethod
+    def calculate_team_spirit_rewards(individual_rewards, team_reward):
+        tau = multi_agent_settings.TEAM_SPIRIT[1]
         team_spirited_rewards = tuple(((1 - tau) * reward) + (tau * team_reward) for reward in individual_rewards)
         return team_spirited_rewards

@@ -3,8 +3,8 @@ from src.Buffers.ReplayBuffer import ReplayBuffer
 
 
 class PPOReplayBuffer(ReplayBuffer):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, num_agents_using_buffer=1):
+        super().__init__(num_agents_using_buffer)
 
         self.states = []
         self.actions = []

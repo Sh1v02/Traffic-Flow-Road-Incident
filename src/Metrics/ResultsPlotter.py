@@ -35,27 +35,40 @@ class ResultsPlotter:
         np.savetxt(settings.SAVE_DIR + "/rewards.txt",
                    (self.steps_history, self.reward_history, self.speed_history), delimiter=',', fmt='%d')
 
-    def get_config_dict(self, multi_agent=False):
+    def get_config_dict(self):
         config = {
-            "TEST_TYPE": "SingleAgent" if not multi_agent else "MultiAgent",
-            "AGENT_COUNT": 1 if not multi_agent else multi_agent_settings.AGENT_COUNT,
-            "WAIT_UNTIL_TERMINATED": "Ignore" if not multi_agent else str(
-                multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
+            "TEST_TYPE": settings.RUN_TYPE,
             "AGENT_TYPE": str(settings.AGENT_TYPE.upper()),
-            "SEED": str(settings.SEED),
-            "TRAINING_STEPS": str(settings.TRAINING_STEPS),
-            "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
-            "LANE_COUNT": str(graphics_settings.LANE_COUNT),
-            "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT)
         }
+
+        if settings.RUN_TYPE.lower() == "multiagent":
+            config.update(
+                {
+                    "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
+                    "WAIT_UNTIL_TERMINATED": str(multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
+                    "TEAM_SPIRIT": str(multi_agent_settings.TEAM_SPIRIT),
+                    "SHARED_REPLAY_BUFFER": str(multi_agent_settings.SHARED_REPLAY_BUFFER)
+                }
+            )
+
+        config.update(
+            {
+                "SEED": str(settings.SEED),
+                "TRAINING_STEPS": str(settings.TRAINING_STEPS),
+                "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
+                "LANE_COUNT": str(graphics_settings.LANE_COUNT),
+                "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT)
+            }
+        )
+
         config.update(self.agent.get_agent_specific_config())
 
         return config
 
-    def save_config_file(self, multi_agent=False):
+    def save_config_file(self):
         os.makedirs(settings.SAVE_DIR, exist_ok=True)
         save_path = settings.SAVE_DIR + "/config.txt"
-        config = self.get_config_dict(multi_agent)
+        config = self.get_config_dict()
         config_df = pd.DataFrame(list(config.items()), columns=['Setting', 'Value'])
         config_df.to_csv(save_path, index=False)
         Helper.output_information("Config Saved to: " + save_path)
@@ -72,4 +85,3 @@ class ResultsPlotter:
         if save_dir:
             os.makedirs(save_dir, exist_ok=True)
             plt.savefig(save_dir + '/' + name + '.png')
-

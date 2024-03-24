@@ -36,12 +36,15 @@ PPO_BATCH_SIZE = 64
 PPO_UPDATE_FREQUENCY = 768
 
 
+# TODO: Test with absolute=False and Normalize=True for multiagent observations
+# TODO: Test SharedReplayBuffer for IPPO
+
 
 
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
 
 GOOGLE_DRIVE_DIR = "/content/drive/My Drive/Dissertation/Results"
-PARENT_DIR = "TESTING"
+PARENT_DIR = ""
 SUB_DIR = AGENT_TYPE.upper() + "/" + date_as_str
 
 

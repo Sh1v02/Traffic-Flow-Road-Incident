@@ -4,7 +4,7 @@ import torch
 from src.Agents.Agent import Agent
 from src.Buffers import PPOReplayBuffer
 from src.Models import PPOActorNetwork, PPOCriticNetwork
-from src.Utilities import settings
+from src.Utilities import settings, multi_agent_settings
 from src.Wrappers.GPUSupport import tensor
 
 
@@ -17,7 +17,7 @@ from src.Wrappers.GPUSupport import tensor
 # TODO: Agent parent class (also includes static agent_specific_config to be called in the get_config_dict method)
 class PPOAgent(Agent):
     def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss(), num_epochs=10,
-                 entropy_coefficient_decay=0.01):
+                 replay_buffer=None):
         self.loss = loss
         self.num_epochs = num_epochs
         self.batch_size = settings.PPO_BATCH_SIZE
@@ -38,7 +38,7 @@ class PPOAgent(Agent):
                                      hidden_layer_dims=self.hidden_layer_dims)
         self.critic = PPOCriticNetwork(optimiser, loss, state_dims, optimiser_args={"lr": self.critic_lr},
                                        hidden_layer_dims=self.hidden_layer_dims)
-        self.replay_buffer = PPOReplayBuffer()
+        self.replay_buffer = PPOReplayBuffer() if not replay_buffer else replay_buffer
 
         self.steps = 0
 
@@ -127,9 +127,17 @@ class PPOAgent(Agent):
                 final_loss = actor_loss + (self.critic_coefficient * critic_loss) - (self.entropy_coefficient * entropy)
                 self.update_networks(final_loss)
 
-        self.replay_buffer.clear()
-        self.entropy_coefficient = max(self.entropy_coefficient * self.entropy_coefficient_decay,
-                                       self.entropy_coefficient_min)
+        # If a shared replay buffer, we want to make sure all agents make use of the buffer and do their updates before
+        #   clearing the buffer, so we will keep a counter that, once hits zero, means we can clear the buffer
+        self.replay_buffer.num_agents_to_update_using_buffer -= 1
+        if self.replay_buffer.num_agents_to_update_using_buffer == 0:
+            # Reset the counter ready for the next updates
+            self.replay_buffer.num_agents_to_update_using_buffer = multi_agent_settings.AGENT_COUNT
+            self.replay_buffer.clear()
+            self.entropy_coefficient = max(self.entropy_coefficient * self.entropy_coefficient_decay,
+                                           self.entropy_coefficient_min)
+
+
 
     def update_networks(self, loss):
         self.actor.zero_grad()

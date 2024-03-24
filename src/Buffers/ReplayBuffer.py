@@ -2,8 +2,11 @@ from abc import ABC, abstractmethod
 
 
 class ReplayBuffer(ABC):
-    def __init__(self, max_size=10_000):
+    def __init__(self, num_agents_using_buffer=1, max_size=10_000):
         self._max_size = max_size
+        # Controls how many agents are using the buffer, and so whenever there is an update, represents how many
+        #   agents are left to update using the buffer's contents
+        self.num_agents_to_update_using_buffer = num_agents_using_buffer
 
     @abstractmethod
     def add_experience(self, *args):

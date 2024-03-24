@@ -10,7 +10,7 @@ from src.Utilities.Helper import Helper
 
 class SingleAgentRunner(AgentRunner):
     def __init__(self, env, test_env, agent):
-        super().__init__(env, test_env, agent, multi_agent=False)
+        super().__init__(env, test_env, agent)
         self.agent = agent
 
         Helper.output_information("Single Agent: " + settings.AGENT_TYPE)
