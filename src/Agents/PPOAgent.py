@@ -65,6 +65,7 @@ class PPOAgent(Agent):
         if self.steps % self.update_frequency != 0:
             return
 
+        # TODO: Get the states, actions, etc here, and only get the batches inside the loop
         for epoch in range(self.num_epochs):
             # GAE calculation, A(t) at each time step
             # Aₜˡᵢₙ = δₜ + (γλ)δₜ₊₁ + (γλ)²δₜ₊₂ + ... + (γλ)^(T-𝑡+₁)δₜ₊(T-1)

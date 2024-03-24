@@ -16,7 +16,7 @@ class MultiAgentRunner(AgentRunner):
         self.agent_count = len(agents)
         self.until_all_done = True
 
-        Helper.output_information("Multi Agent: " + settings.AGENT_TYPE)
+        Helper.output_information("Multi Agent: " + self.agent_type)
         Helper.output_information("  - Training Steps: " + str(self.max_steps))
 
     def train(self):
@@ -31,7 +31,7 @@ class MultiAgentRunner(AgentRunner):
 
             while not done:
                 actions, values, probabilities = (), [], []
-                if settings.AGENT_TYPE.lower() == "ppo":
+                if self.agent_type == "ppo":
                     for i in range(self.agent_count):
                         action, value, prob = self.agents[i].get_action(states[i])
                         actions += (action,)
@@ -48,21 +48,38 @@ class MultiAgentRunner(AgentRunner):
                 if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
                     done = all(dones)
 
+                # If using team spirit, update the rewards to use the team spirit calculation
                 if multi_agent_settings.TEAM_SPIRIT[0]:
                     rewards = self.calculate_team_spirit_rewards(rewards, team_reward)
 
-                for i in range(self.agent_count):
-                    # TODO: Should the agent be adding to the experience buffer if they remain in a terminal state?
-                    if (infos["agents_previous_dones"][i]
-                            and multi_agent_settings.DEATH_HANDLING.lower() == "stop_adding"):
-                        continue
-                    if settings.AGENT_TYPE.lower() == "ppo":
-                        self.agents[i].store_experience_in_replay_buffer(states[i], actions[i], values[i], rewards[i],
-                                                                         dones[i], probabilities[i])
+                # Add to the shared replay buffer (if shared)
+                if multi_agent_settings.SHARED_REPLAY_BUFFER:
+                    if self.agent_type == "ppo":
+                        self.agents[0].store_experience_in_replay_buffer(
+                            states, actions, values, rewards, dones, probabilities
+                        )
                     else:
-                        self.agents[i].store_experience_in_replay_buffer(states[i], actions[i], rewards[i],
-                                                                         next_states[i], dones[i])
-                    self.agents[i].learn()
+                        self.agents[0].store_experience_in_replay_buffer(
+                            states, actions, rewards, next_states, dones
+                        )
+                else:
+                    # Add to each agent's replay buffer (if not shared)
+                    for i in range(self.agent_count):
+                        # TODO: Should the agent be adding to the experience buffer if they remain in a terminal state?
+                        if (infos["agents_previous_dones"][i]
+                                and multi_agent_settings.DEATH_HANDLING.lower() == "stop_adding"):
+                            continue
+
+                        if self.agent_type == "ppo":
+                            self.agents[i].store_experience_in_replay_buffer(
+                                states[i], actions[i], values[i], rewards[i], dones[i], probabilities[i]
+                            )
+                        else:
+                            self.agents[i].store_experience_in_replay_buffer(
+                                states[i], actions[i], rewards[i], next_states[i], dones[i]
+                            )
+                for agent in self.agents:
+                    agent.learn()
 
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
                     optimal_policy_reward, optimal_policy_speed = self.test()

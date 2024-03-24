@@ -1,8 +1,8 @@
 from src.Agents.DDPGAgent import DDPGAgent
 from src.Agents.DDQNAgent import DDQNAgent
 from src.Agents.PPOAgent import PPOAgent
-from src.Buffers import PPOReplayBuffer
-from src.Utilities import settings, multi_agent_settings
+from src.Buffers import PPOSharedReplayBuffer
+from src.Utilities import settings
 
 
 class AgentFactory:
@@ -28,4 +28,4 @@ class AgentFactory:
     @staticmethod
     def create_shared_replay_buffer():
         if settings.AGENT_TYPE.lower() == "ppo":
-            return PPOReplayBuffer(num_agents_using_buffer=multi_agent_settings.AGENT_COUNT)
+            return PPOSharedReplayBuffer()

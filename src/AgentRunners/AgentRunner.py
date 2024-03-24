@@ -20,6 +20,7 @@ class AgentRunner(ABC):
         self.episode = 0
         self.max_steps = settings.TRAINING_STEPS
 
+        self.agent_type = settings.AGENT_TYPE.lower()
         self.start_time = time.time()
 
         self.rp = ResultsPlotter(agent)
