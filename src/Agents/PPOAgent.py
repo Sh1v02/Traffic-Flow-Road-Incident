@@ -79,12 +79,16 @@ class PPOAgent(Agent):
         # Normalise advantages
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
+        # Convert to tensors, and take into account if they need flattening
         advantages = tensor(advantages)
-        values = tensor(values)
-        states = tensor(np.array(states))
-        old_probabilities = tensor(old_probabilities)
-        actions = tensor(actions)
-        # states, actions, values, rewards, dones, old_probabilities = self.replay_buffer.get_buffer_contents()
+        values = tensor(values).flatten() if multi_agent_settings.SHARED_REPLAY_BUFFER \
+            else tensor(values)
+        states = tensor(np.array(states)).flatten(start_dim=0, end_dim=1) if multi_agent_settings.SHARED_REPLAY_BUFFER \
+            else tensor(states)
+        old_probabilities = tensor(old_probabilities).flatten() if multi_agent_settings.SHARED_REPLAY_BUFFER \
+            else tensor(old_probabilities)
+        actions = tensor(actions).flatten() if multi_agent_settings.SHARED_REPLAY_BUFFER \
+            else tensor(actions)
 
         # TODO: Get the states, actions, etc here, and only get the batches inside the loop
         for epoch in range(self.num_epochs):
