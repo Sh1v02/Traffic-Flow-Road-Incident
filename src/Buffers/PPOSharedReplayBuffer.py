@@ -33,16 +33,24 @@ class PPOSharedReplayBuffer(ReplayBuffer):
         self.probabilities = [[] for _ in range(multi_agent_settings.AGENT_COUNT)]
 
     # Return batches of size self.batch_size with random elements in each batch
-    def sample_experience(self, batch_size=20):
+    def sample_experience(self, batch_size=64):
         flattened_states = self.flatten_list(self.states)
         num_of_states = len(flattened_states)
         memory_indexes = np.arange(num_of_states)
         np.random.shuffle(memory_indexes)
         batches = [memory_indexes[i:i + batch_size] for i in range(0, num_of_states, batch_size)]
 
-        return (flattened_states, self.flatten_list(self.actions), self.flatten_list(self.values),
-                self.flatten_list(self.rewards), self.flatten_list(self.dones), self.flatten_list(self.probabilities),
-                batches)
+        return batches
+
+    def get_buffer_contents(self):
+        return (
+            self.states,
+            self.actions,
+            self.values,
+            self.rewards,
+            self.dones,
+            self.probabilities
+        )
 
     @staticmethod
     def flatten_list(list_to_flatten):

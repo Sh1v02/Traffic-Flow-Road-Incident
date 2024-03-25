@@ -6,7 +6,7 @@ SEED = 4
 PLOT_STEPS_FREQUENCY = 25
 TRAINING_STEPS = 100_000
 RENDER_ENVIRONMENT = False
-RECORD_EPISODES = [True, 500]
+RECORD_EPISODES = [False, 500]
 LOG_TENSORBOARD = False
 
 # -------------------------- DDQN Settings --------------------------
@@ -24,7 +24,7 @@ DDQN_UPDATE_TARGET_NETWORK_FREQUENCY = 50
 #   cars are coordinating well?
 # --------------------------- PPO Settings ---------------------------
 PPO_NETWORK_DIMS = [256, 256, 256, 256]
-PPO_LR = [3e-4, 3e-4]
+PPO_LR = [3e-4, 3e-3]
 PPO_DISCOUNT_FACTOR = 0.9
 PPO_GAE_LAMBDA = 0.95
 PPO_EPSILON = 0.2

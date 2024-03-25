@@ -31,10 +31,13 @@ class PPOReplayBuffer(ReplayBuffer):
         self.probabilities = []
 
     # Return batches of size self.batch_size with random elements in each batch
-    def sample_experience(self, batch_size=20):
+    def sample_experience(self, batch_size=64):
         num_of_states = len(self.states)
         memory_indexes = np.arange(num_of_states)
         np.random.shuffle(memory_indexes)
         batches = [memory_indexes[i:i + batch_size] for i in range(0, num_of_states, batch_size)]
 
-        return self.states, self.actions, self.values, self.rewards, self.dones, self.probabilities, batches
+        return batches
+
+    def get_buffer_contents(self):
+        return self.states, self.actions, self.values, self.rewards, self.dones, self.probabilities

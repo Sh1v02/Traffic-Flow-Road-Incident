@@ -65,41 +65,34 @@ class PPOAgent(Agent):
         if self.steps % self.update_frequency != 0:
             return
 
+        states, actions, values, rewards, dones, old_probabilities = self.replay_buffer.get_buffer_contents()
+
+        if multi_agent_settings.SHARED_REPLAY_BUFFER:
+            advantages = np.empty(0, dtype=np.float32)
+            for i in range(self.replay_buffer.num_agents):
+                advantages = np.concatenate(
+                    (advantages, self.calculate_gae(values[i], rewards[i], dones[i])), axis=0
+                )
+        else:
+            advantages = self.calculate_gae(values, rewards, dones)
+
+        # Normalise advantages
+        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+
+        advantages = tensor(advantages)
+        values = tensor(values)
+        states = tensor(np.array(states))
+        old_probabilities = tensor(old_probabilities)
+        actions = tensor(actions)
+        # states, actions, values, rewards, dones, old_probabilities = self.replay_buffer.get_buffer_contents()
+
         # TODO: Get the states, actions, etc here, and only get the batches inside the loop
         for epoch in range(self.num_epochs):
             # GAE calculation, A(t) at each time step
             # Aₜˡᵢₙ = δₜ + (γλ)δₜ₊₁ + (γλ)²δₜ₊₂ + ... + (γλ)^(T-𝑡+₁)δₜ₊(T-1)
             # δₜ = rₜ₊₁ + γV(sₜ₊₁) - V(sₜ)
 
-            states, actions, values, rewards, dones, old_probabilities, batches = (
-                self.replay_buffer.sample_experience(self.batch_size))
-
-            advantages = np.empty(0, dtype=np.float32)
-
-            total_steps = len(rewards)
-
-            for time_step in range(total_steps - 1):
-                gamma_gae_lambda = 1
-                current_advantage = 0
-                for t in range(time_step, total_steps - 1):
-                    td = rewards[t] + (self.gamma * values[t + 1] * (1 - int(dones[t]))) - values[t]
-                    current_advantage += gamma_gae_lambda * td
-                    if dones[t] == 1:
-                        break
-                    gamma_gae_lambda *= self.gamma * self.gae_lambda
-                advantages = np.append(advantages, current_advantage)
-
-            # TODO: Is it better to remove last element overall? --> can be done by returning batches in range (len - 1)
-            # Account for last
-            advantages = np.append(advantages, 0)
-            # Normalise advantages
-            advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-
-            advantages = tensor(advantages)
-            values = tensor(values)
-            states = tensor(np.array(states))
-            old_probabilities = tensor(old_probabilities)
-            actions = tensor(actions)
+            batches = self.replay_buffer.sample_experience(self.batch_size)
 
             # TODO: Vectorise this
             for batch in batches:
@@ -130,15 +123,34 @@ class PPOAgent(Agent):
 
         # If a shared replay buffer, we want to make sure all agents make use of the buffer and do their updates before
         #   clearing the buffer, so we will keep a counter that, once hits zero, means we can clear the buffer
-        self.replay_buffer.num_agents_to_update_using_buffer -= 1
-        if self.replay_buffer.num_agents_to_update_using_buffer == 0:
+        self.replay_buffer.num_agents_left_to_update -= 1
+        if self.replay_buffer.num_agents_left_to_update == 0:
             # Reset the counter ready for the next updates
-            self.replay_buffer.num_agents_to_update_using_buffer = multi_agent_settings.AGENT_COUNT
+            self.replay_buffer.num_agents_left_to_update = multi_agent_settings.AGENT_COUNT
             self.replay_buffer.clear()
             self.entropy_coefficient = max(self.entropy_coefficient * self.entropy_coefficient_decay,
                                            self.entropy_coefficient_min)
 
+    def calculate_gae(self, values, rewards, dones):
+        advantages = np.empty(0, dtype=np.float32)
 
+        total_steps = len(rewards)
+
+        for time_step in range(total_steps - 1):
+            gamma_gae_lambda = 1
+            current_advantage = 0
+            for t in range(time_step, total_steps - 1):
+                td = rewards[t] + (self.gamma * values[t + 1] * (1 - int(dones[t]))) - values[t]
+                current_advantage += gamma_gae_lambda * td
+                if dones[t] == 1:
+                    break
+                gamma_gae_lambda *= self.gamma * self.gae_lambda
+            advantages = np.append(advantages, current_advantage)
+
+        # TODO: Is it better to remove last element overall? --> can be done by returning batches in range (len - 1)
+        # Account for last
+        advantages = np.append(advantages, 0)
+        return advantages
 
     def update_networks(self, loss):
         self.actor.zero_grad()
