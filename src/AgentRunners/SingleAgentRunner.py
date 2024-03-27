@@ -18,6 +18,11 @@ class SingleAgentRunner(AgentRunner):
 
     def train(self):
         self.start_time = time.time()
+
+        # Evaluate for the first time
+        optimal_policy_reward, optimal_policy_speed = self.test()
+        self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed)
+
         print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
