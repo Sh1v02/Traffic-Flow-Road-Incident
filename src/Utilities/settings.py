@@ -3,7 +3,7 @@ from datetime import datetime
 AGENT_TYPE = "ppo"
 
 SEED = 4
-PLOT_STEPS_FREQUENCY = 25
+PLOT_STEPS_FREQUENCY = 25  # Might be overridden when configuring, check PPO_PLOT_STEPS_PER_UPDATE
 TRAINING_STEPS = 100_000
 RENDER_ENVIRONMENT = False
 RECORD_EPISODES = [False, 500]
@@ -34,6 +34,7 @@ PPO_ENTROPY_COEFFICIENT_DECAY = 0.999
 PPO_ENTROPY_COEFFICIENT_MIN = 0.001
 PPO_BATCH_SIZE = 64
 PPO_UPDATE_FREQUENCY = 768
+PPO_PLOT_STEPS_PER_UPDATE = True
 
 
 # TODO: Test with absolute=False and Normalize=True for multiagent observations

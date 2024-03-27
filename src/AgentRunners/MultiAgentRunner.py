@@ -81,14 +81,14 @@ class MultiAgentRunner(AgentRunner):
                 for agent in self.agents:
                     agent.learn()
 
+                episode_reward += team_reward
+                states = next_states
+                self.steps += 1
+
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
                     optimal_policy_reward, optimal_policy_speed = self.test()
                     self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
                                                       ['Team Returns', 'Average Speed'])
-
-                episode_reward += team_reward
-                states = next_states
-                self.steps += 1
             self.episode += 1
 
             # Output episode results

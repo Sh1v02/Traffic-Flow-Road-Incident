@@ -90,12 +90,7 @@ class PPOAgent(Agent):
         actions = tensor(actions).flatten() if multi_agent_settings.SHARED_REPLAY_BUFFER \
             else tensor(actions)
 
-        # TODO: Get the states, actions, etc here, and only get the batches inside the loop
         for epoch in range(self.num_epochs):
-            # GAE calculation, A(t) at each time step
-            # Aₜˡᵢₙ = δₜ + (γλ)δₜ₊₁ + (γλ)²δₜ₊₂ + ... + (γλ)^(T-𝑡+₁)δₜ₊(T-1)
-            # δₜ = rₜ₊₁ + γV(sₜ₊₁) - V(sₜ)
-
             batches = self.replay_buffer.sample_experience(self.batch_size)
 
             # TODO: Vectorise this
@@ -135,6 +130,9 @@ class PPOAgent(Agent):
             self.entropy_coefficient = max(self.entropy_coefficient * self.entropy_coefficient_decay,
                                            self.entropy_coefficient_min)
 
+    # GAE calculation, A(t) at each time step
+    # Aₜˡᵢₙ = δₜ + (γλ)δₜ₊₁ + (γλ)²δₜ₊₂ + ... + (γλ)^(T-𝑡+₁)δₜ₊(T-1)
+    # δₜ = rₜ₊₁ + γV(sₜ₊₁) - V(sₜ)
     def calculate_gae(self, values, rewards, dones):
         advantages = np.empty(0, dtype=np.float32)
 

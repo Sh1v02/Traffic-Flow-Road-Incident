@@ -41,14 +41,13 @@ class SingleAgentRunner(AgentRunner):
 
                 self.agent.learn()
 
+                state = next_state
+                episode_reward += reward
+                self.steps += 1
+
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
                     optimal_policy_reward, optimal_policy_speed = self.test()
                     self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed)
-
-                state = next_state
-                episode_reward += reward
-                agent_speed = np.append(agent_speed, info["agents_speeds"][0])
-                self.steps += 1
             self.episode += 1
 
             # Output episode results
