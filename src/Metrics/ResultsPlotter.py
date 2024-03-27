@@ -21,7 +21,7 @@ class ResultsPlotter:
                         labels=['Steps', 'Speed'])
         r_avg_windows = [100, 500]
         for r_avg_window in r_avg_windows:
-            if episode_reached >= r_avg_window:
+            if len(self.reward_history) >= r_avg_window:
                 self.plot_graph(self.steps_history[r_avg_window - 1:],
                                 np.convolve(self.reward_history, np.ones(r_avg_window) / r_avg_window,
                                             mode='valid'),
