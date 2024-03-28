@@ -38,17 +38,20 @@ def run_multi_agent():
             "type": "MultiAgentAction",
             "action_config": {
                 "type": "DiscreteMetaAction",
-            },
-            # "steering_range": [-np.pi / 100, np.pi / 100]
+            }
         }
     }
 
     env, test_env = Helper.create_environments(config)
 
-    replay_buffer = None
+    networks = replay_buffer = None
     if multi_agent_settings.SHARED_REPLAY_BUFFER:
         replay_buffer = AgentFactory.create_shared_replay_buffer()
-    agents = [AgentFactory.create_new_agent(env, replay_buffer) for _ in range(multi_agent_settings.AGENT_COUNT)]
+
+    if multi_agent_settings.PARAMETER_SHARING == "FULL":
+        networks = AgentFactory.create_fully_shared_networks(env)
+
+    agents = [AgentFactory.create_new_agent(env, replay_buffer, networks) for _ in range(multi_agent_settings.AGENT_COUNT)]
 
     multi_agent_runner = MultiAgentRunner(env, test_env, agents)
     multi_agent_runner.train()

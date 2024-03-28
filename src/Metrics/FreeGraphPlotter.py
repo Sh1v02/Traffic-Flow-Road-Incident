@@ -30,6 +30,8 @@ class FreeGraphPlotter:
         for item in os.listdir(directory):
             file_path = os.path.join(directory, item)
             if os.path.isfile(file_path):
+                if "rewards" not in item:
+                    continue
                 steps, optimal_policy_rewards, optimal_policy_speeds = np.loadtxt(file_path, delimiter=',')
 
                 steps = steps[r_avg_window_size - 1:]
@@ -110,6 +112,8 @@ class FreeGraphPlotter:
         for item in os.listdir(directory):
             file_path = os.path.join(directory, item)
             if os.path.isfile(file_path):
+                if "rewards" not in item:
+                    continue
                 steps, optimal_policy_rewards, optimal_policy_speeds = np.loadtxt(file_path, delimiter=',')
 
                 rolling_avg_steps = steps[r_avg_window_size - 1:]
@@ -128,7 +132,8 @@ class FreeGraphPlotter:
 
         rolling_avg_rewards_axis.set_xlabel('Frames')
         rolling_avg_rewards_axis.set_ylabel('Rolling Average Reward')
-        rolling_avg_rewards_axis.set_title("\n(Individual Rolling Averages with window size = " + str(r_avg_window_size) + ")")
+        rolling_avg_rewards_axis.set_title(
+            "\n(Individual Rolling Averages with window size = " + str(r_avg_window_size) + ")")
 
         rolling_avg_rewards_axis.legend(fontsize='8')
 

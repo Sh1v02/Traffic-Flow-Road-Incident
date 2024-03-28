@@ -14,10 +14,14 @@ class MultiAgentRunner(AgentRunner):
         super().__init__(env, test_env, agents[0])
         self.agents = agents
         self.agent_count = len(agents)
-        self.until_all_done = True
 
         Helper.output_information("Multi Agent: " + self.agent_type)
         Helper.output_information("  - Training Steps: " + str(self.max_steps))
+        Helper.output_information("  - Team Spirit: " + (str(multi_agent_settings.TEAM_SPIRIT[:2]) if
+                                                        multi_agent_settings.TEAM_SPIRIT[0] else "False"))
+        Helper.output_information("  - Shared Replay Buffer: " + (str(multi_agent_settings.SHARED_REPLAY_BUFFER)))
+        Helper.output_information("  - Parameter Sharing: " + (str(multi_agent_settings.PARAMETER_SHARING)))
+
 
     def train(self):
         self.start_time = time.time()

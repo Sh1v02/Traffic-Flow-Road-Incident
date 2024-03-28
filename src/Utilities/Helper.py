@@ -56,5 +56,16 @@ class Helper:
         return env
 
     @staticmethod
+    def get_env_dims(env):
+        states, _ = env.reset(seed=settings.SEED)
+
+        is_multi_agent = settings.RUN_TYPE.lower() == "multiagent"
+        state_dims = len(states[0]) if is_multi_agent else len(states)
+        action_dims = env.action_space[0].n if is_multi_agent else env.action_space.n
+
+        return state_dims, action_dims
+
+
+    @staticmethod
     def output_information(info, **kwargs):
         print(Fore.GREEN + info + Style.RESET_ALL, **kwargs)

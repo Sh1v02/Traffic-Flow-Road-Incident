@@ -17,7 +17,7 @@ from src.Wrappers.GPUSupport import tensor
 # TODO: Agent parent class (also includes static agent_specific_config to be called in the get_config_dict method)
 class PPOAgent(Agent):
     def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss(), num_epochs=10,
-                 replay_buffer=None):
+                 replay_buffer=None, networks=None):
         self.loss = loss
         self.num_epochs = num_epochs
         self.batch_size = settings.PPO_BATCH_SIZE
@@ -35,9 +35,9 @@ class PPOAgent(Agent):
         self.hidden_layer_dims = settings.PPO_NETWORK_DIMS
         # TODO: Add entropy coefficient decay
         self.actor = PPOActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr},
-                                     hidden_layer_dims=self.hidden_layer_dims)
+                                     hidden_layer_dims=self.hidden_layer_dims) if not networks else networks["actor"]
         self.critic = PPOCriticNetwork(optimiser, loss, state_dims, optimiser_args={"lr": self.critic_lr},
-                                       hidden_layer_dims=self.hidden_layer_dims)
+                                       hidden_layer_dims=self.hidden_layer_dims) if not networks else networks["critic"]
         self.replay_buffer = PPOReplayBuffer() if not replay_buffer else replay_buffer
 
         self.steps = 0
