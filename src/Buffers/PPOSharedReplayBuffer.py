@@ -34,7 +34,7 @@ class PPOSharedReplayBuffer(ReplayBuffer):
 
     # Return batches of size self.batch_size with random elements in each batch
     def sample_experience(self, batch_size=64):
-        flattened_states = self.flatten_list(self.states)
+        flattened_states = self.flatten_list(self.rewards)
         num_of_states = len(flattened_states)
         memory_indexes = np.arange(num_of_states)
         np.random.shuffle(memory_indexes)

@@ -18,10 +18,9 @@ class MultiAgentRunner(AgentRunner):
         Helper.output_information("Multi Agent: " + self.agent_type)
         Helper.output_information("  - Training Steps: " + str(self.max_steps))
         Helper.output_information("  - Team Spirit: " + (str(multi_agent_settings.TEAM_SPIRIT[:2]) if
-                                                        multi_agent_settings.TEAM_SPIRIT[0] else "False"))
+                                                         multi_agent_settings.TEAM_SPIRIT[0] else "False"))
         Helper.output_information("  - Shared Replay Buffer: " + (str(multi_agent_settings.SHARED_REPLAY_BUFFER)))
         Helper.output_information("  - Parameter Sharing: " + (str(multi_agent_settings.PARAMETER_SHARING)))
-
 
     def train(self):
         self.start_time = time.time()
@@ -75,7 +74,6 @@ class MultiAgentRunner(AgentRunner):
                 else:
                     # Add to each agent's replay buffer (if not shared)
                     for i in range(self.agent_count):
-                        # TODO: Should the agent be adding to the experience buffer if they remain in a terminal state?
                         if (infos["agents_previous_dones"][i]
                                 and multi_agent_settings.DEATH_HANDLING.lower() == "stop_adding"):
                             continue
@@ -88,8 +86,17 @@ class MultiAgentRunner(AgentRunner):
                             self.agents[i].store_experience_in_replay_buffer(
                                 states[i], actions[i], rewards[i], next_states[i], dones[i]
                             )
-                for agent in self.agents:
-                    agent.learn()
+
+                # If we are fully parameter sharing (both networks) AND only one update is needed, then only one
+                #   agent will call .learn() and update the networks, otherwise each agent calls .leanr() and updates
+                #   their networks, regardless of if they are sharing
+                if (multi_agent_settings.PARAMETER_SHARING[0].lower() == "full" and
+                        multi_agent_settings.PARAMETER_SHARING[1].lower() == "one_update" and
+                        multi_agent_settings.SHARED_REPLAY_BUFFER):
+                    self.agents[0].learn()
+                else:
+                    for agent in self.agents:
+                        agent.learn()
 
                 episode_reward += team_reward
                 states = next_states

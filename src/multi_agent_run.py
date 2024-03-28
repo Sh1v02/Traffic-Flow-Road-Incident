@@ -48,7 +48,7 @@ def run_multi_agent():
     if multi_agent_settings.SHARED_REPLAY_BUFFER:
         replay_buffer = AgentFactory.create_shared_replay_buffer()
 
-    if multi_agent_settings.PARAMETER_SHARING == "FULL":
+    if multi_agent_settings.PARAMETER_SHARING[0].lower() == "full":
         networks = AgentFactory.create_fully_shared_networks(env)
 
     agents = [AgentFactory.create_new_agent(env, replay_buffer, networks) for _ in range(multi_agent_settings.AGENT_COUNT)]

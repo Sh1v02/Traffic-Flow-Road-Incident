@@ -14,7 +14,7 @@ class FreeGraphPlotter:
         max_rewards = np.max(values, axis=0)
 
         plot_axis.plot(steps * 15, mean_rewards, label=label, linewidth=1.0, color=colour)
-        plot_axis.fill_between(steps * 15, min_rewards, max_rewards, color=colour, alpha=0.1)
+        plot_axis.fill_between(steps * 15, min_rewards, max_rewards, color=colour, alpha=0.05)
 
     # Given a directory containing n number of runs (rewards.txt) of the same type, plot the average and min/max range
     @staticmethod
@@ -60,7 +60,7 @@ class FreeGraphPlotter:
             "Rolling Average Speed": [plt.subplots(), stacked_speeds]
         }
 
-        save_dir = directory + "/Results/Averaged"
+        save_dir = directory + "/Results"
         os.makedirs(save_dir, exist_ok=True)
 
         for key in plots:
@@ -84,25 +84,36 @@ class FreeGraphPlotter:
     #       - rewards_2.txt
     @staticmethod
     def plot_multiple_average_graphs(parent_directory, r_avg_window_size=500):
-        line_colours = ['blue', 'red', 'green', 'orange', 'purple', 'black', 'cyan', 'gray', 'yellow', 'magenta']
+        line_colours = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'cyan', 'gray', 'yellow', 'magenta']
         colour_index = 0
-        plot_fig, plot_axis = plt.subplots()
+        rewards_fig, rewards_axis = plt.subplots()
+        speeds_fig, speeds_axis = plt.subplots()
         for run_directory in os.listdir(parent_directory):
+            current_directory = os.path.join(parent_directory, run_directory)
             steps, stacked_rewards, stacked_speeds = FreeGraphPlotter.plot_average(
-                os.path.join(parent_directory, run_directory), plot_graphs=False)
+                current_directory,
+                r_avg_window_size=r_avg_window_size,
+                plot_graphs=False
+            )
             if steps.size == 0:
-                print(run_directory, " does not contain any rewards.txt files")
+                print(current_directory, " does not contain any rewards.txt files")
                 continue
-            FreeGraphPlotter.plot_filled_graph(plot_axis, steps, stacked_rewards, run_directory,
+            FreeGraphPlotter.plot_filled_graph(rewards_axis, steps, stacked_rewards, run_directory,
                                                line_colours[colour_index])
-            print("here")
+            FreeGraphPlotter.plot_filled_graph(speeds_axis, steps, stacked_speeds, run_directory,
+                                               line_colours[colour_index])
             colour_index += 1
 
-        save_dir = parent_directory + "/Results/Averaged"
+        save_dir = parent_directory + "/Results/"
         os.makedirs(save_dir, exist_ok=True)
-        plot_axis.legend(fontsize='8')
-        plot_axis.set_title(parent_directory)
-        plot_fig.savefig(save_dir + "/result")
+
+        rewards_axis.legend(fontsize='8')
+        rewards_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
+        rewards_fig.savefig(save_dir + "Rewards Rolling Average (window_size=" + str(r_avg_window_size) + ")")
+
+        speeds_axis.legend(fontsize='8')
+        speeds_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
+        speeds_fig.savefig(save_dir + "Speeds Rolling Average (window_size=" + str(r_avg_window_size) + ")")
 
     @staticmethod
     def plot_multiple_individual_graphs(directory, r_avg_window_size=500):
