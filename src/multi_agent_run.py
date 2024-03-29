@@ -1,3 +1,4 @@
+import random
 import warnings
 
 from src.AgentRunners import MultiAgentRunner
@@ -7,43 +8,47 @@ from src.Utilities.Helper import Helper
 
 warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
+# Multi - agent environment configuration
+multi_agent_config = {
+    "controlled_vehicles": multi_agent_settings.AGENT_COUNT,
+    "absolute": True,
+    "observation": {
+        "type": "MultiAgentObservation",
+        "observation_config": {
+            "type": "Kinematics",
+            "vehicles_count": 10,
+            # "see_behind": True,
+            "normalize": False,
+            "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
+            "features_range": {
+                "x": [-100, 100],
+                "y": [-100, 100],
+                "vx": [-20, 20],
+                "vy": [-20, 20]
+            },
+            # TODO: Try with False! (MAYBE CHANGE NORMALIZE TOO)
+            "absolute": True,
+            "order": "sorted",
+        },
+    },
+    "action": {
+        "type": "MultiAgentAction",
+        "action_config": {
+            "type": "DiscreteMetaAction",
+        },
+        # "steering_range": [-np.pi / 100, np.pi / 100]
+    }
+}
+
 
 def run_multi_agent():
+    if settings.RANDOM_SEED:
+        settings.SEED = random.randint(0, 100)
+
     if settings.AGENT_TYPE == "ppo" and settings.PPO_PLOT_STEPS_PER_UPDATE:
         settings.PLOT_STEPS_FREQUENCY = settings.PPO_UPDATE_FREQUENCY
-    # Multi - agent environment configuration
-    config = {
-        "controlled_vehicles": multi_agent_settings.AGENT_COUNT,
-        "absolute": True,
-        "observation": {
-            "type": "MultiAgentObservation",
-            "observation_config": {
-                "type": "Kinematics",
-                "vehicles_count": 10,
-                # "see_behind": True,
-                "normalize": False,
-                "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
-                "features_range": {
-                    "x": [-100, 100],
-                    "y": [-100, 100],
-                    "vx": [-20, 20],
-                    "vy": [-20, 20]
-                },
-                # TODO: Try with False! (MAYBE CHANGE NORMALIZE TOO)
-                "absolute": True,
-                "order": "sorted",
-            },
-        },
-        "action": {
-            "type": "MultiAgentAction",
-            "action_config": {
-                "type": "DiscreteMetaAction",
-            },
-            # "steering_range": [-np.pi / 100, np.pi / 100]
-        }
-    }
 
-    env, test_env = Helper.create_environments(config)
+    env, test_env = Helper.create_environments(multi_agent_config)
 
     replay_buffer = None
     if multi_agent_settings.SHARED_REPLAY_BUFFER:
