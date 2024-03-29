@@ -220,6 +220,10 @@ class AbstractEnv(gym.Env):
         """
         raise NotImplementedError()
 
+    # Return a global state representation (all vehicles and objects)
+    def get_global_state(self):
+        return self.observation_type.get_global_state()
+
     def step(self, action: Action) -> Tuple[Observation, float, bool, bool, dict]:
         """
         Perform an action and step the environment dynamics.

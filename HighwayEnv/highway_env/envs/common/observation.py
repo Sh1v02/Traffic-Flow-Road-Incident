@@ -45,7 +45,6 @@ class ObservationType(object):
 
 
 class GrayscaleObservation(ObservationType):
-
     """
     An observation class that collects directly what the simulator renders.
 
@@ -63,14 +62,14 @@ class GrayscaleObservation(ObservationType):
     """
 
     def __init__(
-        self,
-        env: "AbstractEnv",
-        observation_shape: Tuple[int, int],
-        stack_size: int,
-        weights: List[float],
-        scaling: Optional[float] = None,
-        centering_position: Optional[List[float]] = None,
-        **kwargs
+            self,
+            env: "AbstractEnv",
+            observation_shape: Tuple[int, int],
+            stack_size: int,
+            weights: List[float],
+            scaling: Optional[float] = None,
+            centering_position: Optional[List[float]] = None,
+            **kwargs
     ) -> None:
         super().__init__(env)
         self.observation_shape = observation_shape
@@ -87,7 +86,7 @@ class GrayscaleObservation(ObservationType):
                 "screen_height": self.observation_shape[1],
                 "scaling": scaling or viewer_config["scaling"],
                 "centering_position": centering_position
-                or viewer_config["centering_position"],
+                                      or viewer_config["centering_position"],
             }
         )
         self.viewer = EnvViewer(env, config=viewer_config)
@@ -138,37 +137,36 @@ class TimeToCollisionObservation(ObservationType):
         obs_lanes = 3
         l0 = grid.shape[1] + self.observer_vehicle.lane_index[2] - obs_lanes // 2
         lf = grid.shape[1] + self.observer_vehicle.lane_index[2] + obs_lanes // 2
-        clamped_grid = padded_grid[:, l0 : lf + 1, :]
+        clamped_grid = padded_grid[:, l0: lf + 1, :]
         repeats = np.ones(clamped_grid.shape[0])
         repeats[np.array([0, -1])] += clamped_grid.shape[0]
         padded_grid = np.repeat(clamped_grid, repeats.astype(int), axis=0)
         obs_speeds = 3
         v0 = grid.shape[0] + self.observer_vehicle.speed_index - obs_speeds // 2
         vf = grid.shape[0] + self.observer_vehicle.speed_index + obs_speeds // 2
-        clamped_grid = padded_grid[v0 : vf + 1, :, :]
+        clamped_grid = padded_grid[v0: vf + 1, :, :]
         return clamped_grid.astype(np.float32)
 
 
 class KinematicObservation(ObservationType):
-
     """Observe the kinematics of nearby vehicles."""
 
     FEATURES: List[str] = ["presence", "x", "y", "vx", "vy"]
 
     def __init__(
-        self,
-        env: "AbstractEnv",
-        features: List[str] = None,
-        vehicles_count: int = 5,
-        features_range: Dict[str, List[float]] = None,
-        absolute: bool = False,
-        order: str = "sorted",
-        normalize: bool = True,
-        clip: bool = True,
-        see_behind: bool = False,
-        observe_intentions: bool = False,
-        include_obstacles: bool = True,
-        **kwargs: dict
+            self,
+            env: "AbstractEnv",
+            features: List[str] = None,
+            vehicles_count: int = 5,
+            features_range: Dict[str, List[float]] = None,
+            absolute: bool = False,
+            order: str = "sorted",
+            normalize: bool = True,
+            clip: bool = True,
+            see_behind: bool = False,
+            observe_intentions: bool = False,
+            include_obstacles: bool = True,
+            **kwargs: dict
     ) -> None:
         """
         :param env: The environment to observe
@@ -229,6 +227,32 @@ class KinematicObservation(ObservationType):
                     df[feature] = np.clip(df[feature], -1, 1)
         return df
 
+    # Gets the global state, for all objects on the road, and returns a df based on the features defined in the config
+    def get_global_state(self):
+        if not self.env.road:
+            return np.zeros(self.space().shape)
+
+        global_state = self.env.road.get_all_objects()
+
+        df = pd.DataFrame.from_records(
+            [
+                object.to_dict(observe_intentions=self.observe_intentions) for object in global_state
+            ]
+        )
+
+        df = df[self.features]
+
+        # Normalize and clip
+        if self.normalize:
+            df = self.normalize_obs(df)
+
+        # Reorder
+        df = df[self.features]
+        obs = df.values.copy()
+
+        # Flatten
+        return obs.astype(self.space().dtype)
+
     def observe(self) -> np.ndarray:
         if not self.env.road:
             return np.zeros(self.space().shape)
@@ -249,7 +273,7 @@ class KinematicObservation(ObservationType):
             vehicles_df = pd.DataFrame.from_records(
                 [
                     v.to_dict(origin, observe_intentions=self.observe_intentions)
-                    for v in close_vehicles[-self.vehicles_count + 1 :]
+                    for v in close_vehicles[-self.vehicles_count + 1:]
                 ]
             )
             df = pd.concat([df, vehicles_df], ignore_index=True)
@@ -275,7 +299,6 @@ class KinematicObservation(ObservationType):
 
 
 class OccupancyGridObservation(ObservationType):
-
     """Observe an occupancy grid of nearby vehicles."""
 
     FEATURES: List[str] = ["presence", "vx", "vy", "on_road"]
@@ -283,17 +306,17 @@ class OccupancyGridObservation(ObservationType):
     GRID_STEP: List[int] = [5, 5]
 
     def __init__(
-        self,
-        env: "AbstractEnv",
-        features: Optional[List[str]] = None,
-        grid_size: Optional[Tuple[Tuple[float, float], Tuple[float, float]]] = None,
-        grid_step: Optional[Tuple[float, float]] = None,
-        features_range: Dict[str, List[float]] = None,
-        absolute: bool = False,
-        align_to_vehicle_axes: bool = False,
-        clip: bool = True,
-        as_image: bool = False,
-        **kwargs: dict
+            self,
+            env: "AbstractEnv",
+            features: Optional[List[str]] = None,
+            grid_size: Optional[Tuple[Tuple[float, float], Tuple[float, float]]] = None,
+            grid_step: Optional[Tuple[float, float]] = None,
+            features_range: Dict[str, List[float]] = None,
+            absolute: bool = False,
+            align_to_vehicle_axes: bool = False,
+            clip: bool = True,
+            as_image: bool = False,
+            **kwargs: dict
     ) -> None:
         """
         :param env: The environment to observe
@@ -392,8 +415,8 @@ class OccupancyGridObservation(ObservationType):
                             )
                         cell = self.pos_to_index((x, y), relative=not self.absolute)
                         if (
-                            0 <= cell[0] < self.grid.shape[-2]
-                            and 0 <= cell[1] < self.grid.shape[-1]
+                                0 <= cell[0] < self.grid.shape[-2]
+                                and 0 <= cell[1] < self.grid.shape[-1]
                         ):
                             self.grid[layer, cell[0], cell[1]] = vehicle[feature]
                 elif feature == "on_road":
@@ -451,7 +474,7 @@ class OccupancyGridObservation(ObservationType):
         return position
 
     def fill_road_layer_by_lanes(
-        self, layer_index: int, lane_perception_distance: float = 100
+            self, layer_index: int, lane_perception_distance: float = 100
     ) -> None:
         """
         A layer to encode the onroad (1) / offroad (0) information
@@ -477,8 +500,8 @@ class OccupancyGridObservation(ObservationType):
                     for waypoint in waypoints:
                         cell = self.pos_to_index(lane.position(waypoint, 0))
                         if (
-                            0 <= cell[0] < self.grid.shape[-2]
-                            and 0 <= cell[1] < self.grid.shape[-1]
+                                0 <= cell[0] < self.grid.shape[-2]
+                                and 0 <= cell[1] < self.grid.shape[-1]
                         ):
                             self.grid[layer_index, cell[0], cell[1]] = 1
 
@@ -559,7 +582,7 @@ class KinematicsGoalObservation(KinematicObservation):
 
 class AttributesObservation(ObservationType):
     def __init__(
-        self, env: "AbstractEnv", attributes: List[str], **kwargs: dict
+            self, env: "AbstractEnv", attributes: List[str], **kwargs: dict
     ) -> None:
         self.env = env
         self.attributes = attributes
@@ -585,7 +608,8 @@ class AttributesObservation(ObservationType):
 
 
 class MultiAgentObservation(ObservationType):
-    def __init__(self, env: "AbstractEnv", observation_config: dict, **kwargs) -> None:
+    def __init__(self, env: "AbstractEnv", observation_config: dict, different_observation_types=False,
+                 **kwargs) -> None:
         super().__init__(env)
         self.observation_config = observation_config
         self.agents_observation_types = []
@@ -593,6 +617,8 @@ class MultiAgentObservation(ObservationType):
             obs_type = observation_factory(self.env, self.observation_config)
             obs_type.observer_vehicle = vehicle
             self.agents_observation_types.append(obs_type)
+
+        self.overall_observation_type = self.agents_observation_types[0] if not different_observation_types else None
 
     def space(self) -> spaces.Space:
         return spaces.Tuple(
@@ -602,10 +628,13 @@ class MultiAgentObservation(ObservationType):
     def observe(self) -> tuple:
         return tuple(obs_type.observe() for obs_type in self.agents_observation_types)
 
+    def get_global_state(self):
+        return self.overall_observation_type.get_global_state()
+
 
 class TupleObservation(ObservationType):
     def __init__(
-        self, env: "AbstractEnv", observation_configs: List[dict], **kwargs
+            self, env: "AbstractEnv", observation_configs: List[dict], **kwargs
     ) -> None:
         super().__init__(env)
         self.observation_types = [
@@ -621,7 +650,6 @@ class TupleObservation(ObservationType):
 
 
 class ExitObservation(KinematicObservation):
-
     """Specific to exit_env, observe the distance to the next exit lane as part of a KinematicObservation."""
 
     def observe(self) -> np.ndarray:
@@ -651,7 +679,7 @@ class ExitObservation(KinematicObservation):
                             v.to_dict(
                                 origin, observe_intentions=self.observe_intentions
                             )
-                            for v in close_vehicles[-self.vehicles_count + 1 :]
+                            for v in close_vehicles[-self.vehicles_count + 1:]
                         ]
                     )[self.features],
                 ],
@@ -680,12 +708,12 @@ class LidarObservation(ObservationType):
     SPEED = 1
 
     def __init__(
-        self,
-        env,
-        cells: int = 16,
-        maximum_range: float = 60,
-        normalize: bool = True,
-        **kwargs
+            self,
+            env,
+            cells: int = 16,
+            maximum_range: float = 60,
+            normalize: bool = True,
+            **kwargs
     ):
         super().__init__(env, **kwargs)
         self.cells = cells
@@ -732,7 +760,7 @@ class LidarObservation(ObservationType):
             angles = [self.position_to_angle(corner, origin) for corner in corners]
             min_angle, max_angle = min(angles), max(angles)
             if (
-                min_angle < -np.pi / 2 < np.pi / 2 < max_angle
+                    min_angle < -np.pi / 2 < np.pi / 2 < max_angle
             ):  # Object's corners are wrapping around +pi
                 min_angle, max_angle = max_angle, min_angle + 2 * np.pi
             start, end = self.angle_to_index(min_angle), self.angle_to_index(max_angle)
@@ -755,8 +783,8 @@ class LidarObservation(ObservationType):
 
     def position_to_angle(self, position: np.ndarray, origin: np.ndarray) -> float:
         return (
-            np.arctan2(position[1] - origin[1], position[0] - origin[0])
-            + self.angle / 2
+                np.arctan2(position[1] - origin[1], position[0] - origin[0])
+                + self.angle / 2
         )
 
     def position_to_index(self, position: np.ndarray, origin: np.ndarray) -> int:
