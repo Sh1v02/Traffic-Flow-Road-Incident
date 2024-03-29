@@ -1,8 +1,9 @@
 import random
 from datetime import datetime
+from random import seed
 
-import numpy as np
 import torch
+from numpy.random import seed as np_seed
 
 from src.Utilities.Helper import Helper
 
@@ -58,7 +59,7 @@ SAVE_DIR = ""
 
 def configure_settings():
     # This has to remain constant to ensure that the environment itself, such as road and car positions, doesn't change
-    np.random.seed(ENVIRONMENT_SEED)
+    np_seed(ENVIRONMENT_SEED)
 
     global SEED
     global PLOT_STEPS_FREQUENCY
@@ -72,7 +73,8 @@ def configure_settings():
     torch.manual_seed(SEED)
     torch.cuda.manual_seed(SEED)
     torch.mps.manual_seed(SEED)
-    Helper.output_information("SEED: ", SEED)
+    seed(SEED)
+    Helper.output_information("SEED: " + str(SEED))
     if torch.cuda.is_available():
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
