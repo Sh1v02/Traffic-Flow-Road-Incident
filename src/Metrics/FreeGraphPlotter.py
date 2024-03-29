@@ -18,7 +18,7 @@ class FreeGraphPlotter:
 
     # Given a directory containing n number of runs (rewards.txt) of the same type, plot the average and min/max range
     @staticmethod
-    def plot_average(directory, r_avg_window_size=500, plot_graphs=True):
+    def plot_average(directory, r_avg_window_size=100, plot_graphs=True):
         parent_dir_name = directory.rstrip("/").split("/")[-1]
 
         stacked_rewards = np.empty(0)
@@ -83,7 +83,7 @@ class FreeGraphPlotter:
     #       - rewards_1.txt
     #       - rewards_2.txt
     @staticmethod
-    def plot_multiple_average_graphs(parent_directory, r_avg_window_size=500):
+    def plot_multiple_average_graphs(parent_directory, r_avg_window_size=100):
         line_colours = ['blue', 'red', 'green', 'purple', 'orange', 'black', 'cyan', 'gray', 'yellow', 'magenta']
         colour_index = 0
         rewards_fig, rewards_axis = plt.subplots()
@@ -104,7 +104,7 @@ class FreeGraphPlotter:
                                                line_colours[colour_index])
             colour_index += 1
 
-        save_dir = parent_directory + "/Results/"
+        save_dir = parent_directory + "/AveragesResults/"
         os.makedirs(save_dir, exist_ok=True)
 
         rewards_axis.legend(fontsize='8')
@@ -116,7 +116,7 @@ class FreeGraphPlotter:
         speeds_fig.savefig(save_dir + "Speeds Rolling Average (window_size=" + str(r_avg_window_size) + ")")
 
     @staticmethod
-    def plot_multiple_individual_graphs(directory, r_avg_window_size=500):
+    def plot_multiple_individual_graphs(directory, r_avg_window_size=100):
         rolling_avg_rewards_fig, rolling_avg_rewards_axis = plt.subplots()
         rolling_avg_speed_fig, rolling_avg_speed_axis = plt.subplots()
 
