@@ -55,6 +55,7 @@ class ResultsPlotter:
 
         config.update(
             {
+                "ENVIRONMENT_SEED": str(settings.ENVIRONMENT_SEED),
                 "SEED": str(settings.SEED),
                 "TRAINING_STEPS": str(settings.TRAINING_STEPS),
                 "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),

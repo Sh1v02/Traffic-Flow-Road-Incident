@@ -10,11 +10,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="gymnasium.core")
 
 
 def run_single_agent():
-    if settings.RANDOM_SEED:
-        settings.SEED = random.randint(0, 100)
-
-    if settings.AGENT_TYPE == "ppo" and settings.PPO_PLOT_STEPS_PER_UPDATE:
-        settings.PLOT_STEPS_FREQUENCY = settings.PPO_UPDATE_FREQUENCY
+    settings.configure_settings()
 
     env, test_env = Helper.create_environments()
 

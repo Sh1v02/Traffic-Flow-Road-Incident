@@ -1,9 +1,17 @@
+import random
 from datetime import datetime
+
+import numpy as np
+import torch
+
+from src.Utilities.Helper import Helper
+
+ENVIRONMENT_SEED = 4
+SEED = 4
+RANDOM_SEED = True
 
 AGENT_TYPE = "ppo"
 
-SEED = 4
-RANDOM_SEED = True
 PLOT_STEPS_FREQUENCY = 25  # Might be overridden when configuring, check PPO_PLOT_STEPS_PER_UPDATE
 TRAINING_STEPS = 300_000
 RENDER_ENVIRONMENT = True
@@ -37,19 +45,34 @@ PPO_BATCH_SIZE = 512
 PPO_UPDATE_FREQUENCY = 1536
 PPO_PLOT_STEPS_PER_UPDATE = True
 
-
-# TODO: Test with absolute=False and Normalize=True for multiagent observations
-# TODO: Test SharedReplayBuffer for IPPO
-
-
-
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
 
 GOOGLE_DRIVE_DIR = "/content/drive/My Drive/Dissertation/Results"
 LOCAL_DIR = "Results"
 SUB_DIR = AGENT_TYPE.upper() + "/" + date_as_str
 
-
 COLAB = False
 RUN_TYPE = ""
 SAVE_DIR = ""
+
+
+def configure_settings():
+    # This has to remain constant to ensure that the environment itself, such as road and car positions, doesn't change
+    np.random.seed(ENVIRONMENT_SEED)
+
+    global SEED
+    global PLOT_STEPS_FREQUENCY
+
+    if RANDOM_SEED:
+        SEED = random.randint(0, 100)
+
+    if AGENT_TYPE == "ppo" and PPO_PLOT_STEPS_PER_UPDATE:
+        PLOT_STEPS_FREQUENCY = PPO_UPDATE_FREQUENCY
+
+    torch.manual_seed(SEED)
+    torch.cuda.manual_seed(SEED)
+    torch.mps.manual_seed(SEED)
+    Helper.output_information("SEED: ", SEED)
+    if torch.cuda.is_available():
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False

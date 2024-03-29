@@ -57,7 +57,7 @@ class Helper:
 
     @staticmethod
     def get_env_dims(env):
-        states, _ = env.reset(seed=settings.SEED)
+        states, _ = env.reset()
 
         is_multi_agent = settings.RUN_TYPE.lower() == "multiagent"
         state_dims = len(states[0]) if is_multi_agent else len(states)
