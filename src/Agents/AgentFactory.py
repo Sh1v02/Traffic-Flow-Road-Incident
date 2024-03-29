@@ -14,8 +14,6 @@ class AgentFactory:
     def create_new_agent(env, replay_buffer=None, networks=None):
         state_dims, action_dims = Helper.get_env_dims(env)
 
-        replay_buffer = replay_buffer if replay_buffer else None
-
         if settings.AGENT_TYPE == "ddqn":
             return DDQNAgent(state_dims, action_dims)
         if settings.AGENT_TYPE == "ppo":

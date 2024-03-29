@@ -123,7 +123,9 @@ class PPOAgent(Agent):
         # If a shared replay buffer, we want to make sure all agents make use of the buffer and do their updates before
         #   clearing the buffer, so we will keep a counter that, once hits zero, means we can clear the buffer
         self.replay_buffer.num_agents_left_to_update -= 1
-        if self.replay_buffer.num_agents_left_to_update == 0:
+        if (self.replay_buffer.num_agents_left_to_update == 0 or
+                (multi_agent_settings.PARAMETER_SHARING[0].lower() == "full" and
+                 multi_agent_settings.PARAMETER_SHARING[1].lower() == "one_update")):
             # Reset the counter ready for the next updates
             self.replay_buffer.num_agents_left_to_update = multi_agent_settings.AGENT_COUNT
             self.replay_buffer.clear()
