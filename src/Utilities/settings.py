@@ -3,6 +3,7 @@ from datetime import datetime
 AGENT_TYPE = "ppo"
 
 SEED = 4
+RANDOM_SEED = True
 PLOT_STEPS_FREQUENCY = 25  # Might be overridden when configuring, check PPO_PLOT_STEPS_PER_UPDATE
 TRAINING_STEPS = 100_000
 RENDER_ENVIRONMENT = False

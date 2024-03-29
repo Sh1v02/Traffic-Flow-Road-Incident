@@ -45,6 +45,7 @@ class ResultsPlotter:
             config.update(
                 {
                     "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
+                    "OBSTRUCTION_COUNT": graphics_settings.OBSTRUCTION_COUNT,
                     "WAIT_UNTIL_TERMINATED": str(multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
                     "TEAM_SPIRIT": str(multi_agent_settings.TEAM_SPIRIT),
                     "SHARED_REPLAY_BUFFER": str(multi_agent_settings.SHARED_REPLAY_BUFFER)
