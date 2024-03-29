@@ -1,11 +1,10 @@
 import sys
-import torch
 from multiprocessing import set_start_method
 from multiprocessing import Process
 from multiprocessing import Lock
 
-from colab_run_single_agent import run_single_agent
-from colab_run_multi_agent import run_multi_agent
+from colab_run_single_agent import configure_single_agent_on_colab
+from colab_run_multi_agent import configure_multi_agent_on_colab
 from src.Utilities import settings
 from src.Utilities.Helper import Helper
 
@@ -25,6 +24,6 @@ if __name__ == "__main__":
         # ***************************************************************
 
     lock = Lock()
-    process = Process(target=run_multi_agent(), args=(lock,))
+    process = Process(target=configure_multi_agent_on_colab(), args=(lock,))
     process.start()
     process.join()

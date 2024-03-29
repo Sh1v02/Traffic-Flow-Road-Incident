@@ -10,7 +10,7 @@ from src.Utilities.Helper import Helper
 
 class SingleAgentRunner(AgentRunner):
     def __init__(self, env, test_env, agent):
-        super().__init__(env, test_env, agent, multi_agent=False)
+        super().__init__(env, test_env, agent)
         self.agent = agent
 
         Helper.output_information("Single Agent: " + settings.AGENT_TYPE)
@@ -18,6 +18,11 @@ class SingleAgentRunner(AgentRunner):
 
     def train(self):
         self.start_time = time.time()
+
+        # Evaluate for the first time
+        optimal_policy_reward, optimal_policy_speed = self.test()
+        self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed)
+
         print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
@@ -41,14 +46,13 @@ class SingleAgentRunner(AgentRunner):
 
                 self.agent.learn()
 
+                state = next_state
+                episode_reward += reward
+                self.steps += 1
+
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
                     optimal_policy_reward, optimal_policy_speed = self.test()
                     self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed)
-
-                state = next_state
-                episode_reward += reward
-                agent_speed = np.append(agent_speed, info["agents_speeds"][0])
-                self.steps += 1
             self.episode += 1
 
             # Output episode results

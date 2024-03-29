@@ -11,20 +11,28 @@ from src.Utilities.Helper import Helper
 class MultiAgentRunner(AgentRunner):
     def __init__(self, env, test_env, agents):
         # Only pass one agent instance in, just to give it a reference agent type to call methods from
-        super().__init__(env, test_env, agents[0], multi_agent=True)
+        super().__init__(env, test_env, agents[0])
         self.agents = agents
         self.agent_count = len(agents)
-        self.until_all_done = True
 
-        Helper.output_information("Multi Agent: " + settings.AGENT_TYPE)
+        Helper.output_information("Multi Agent: " + self.agent_type)
         Helper.output_information("  - Training Steps: " + str(self.max_steps))
+        Helper.output_information("  - Team Spirit: " + (str(multi_agent_settings.TEAM_SPIRIT[:2]) if
+                                                         multi_agent_settings.TEAM_SPIRIT[0] else "False"))
+        Helper.output_information("  - Shared Replay Buffer: " + (str(multi_agent_settings.SHARED_REPLAY_BUFFER)))
+        Helper.output_information("  - Parameter Sharing: " + (str(multi_agent_settings.PARAMETER_SHARING)))
 
     def train(self):
         self.start_time = time.time()
+
+        # Evaluate for the first time:
+        optimal_policy_reward, optimal_policy_speed = self.test()
+        self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
+                                          ['Team Returns', 'Average Speed'])
+
         print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
-            previous_dones = tuple(False for _ in range(self.agent_count))
             states, infos = self.env.reset(seed=settings.SEED)
 
             episode_reward = 0
@@ -32,7 +40,7 @@ class MultiAgentRunner(AgentRunner):
 
             while not done:
                 actions, values, probabilities = (), [], []
-                if settings.AGENT_TYPE.lower() == "ppo":
+                if self.agent_type == "ppo":
                     for i in range(self.agent_count):
                         action, value, prob = self.agents[i].get_action(states[i])
                         actions += (action,)
@@ -49,27 +57,55 @@ class MultiAgentRunner(AgentRunner):
                 if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
                     done = all(dones)
 
-                for i in range(self.agent_count):
-                    # TODO: Should the agent be adding to the experience buffer if they remain in a terminal state?
-                    if previous_dones[i]:
-                        continue
-                    if settings.AGENT_TYPE.lower() == "ppo":
-                        self.agents[i].store_experience_in_replay_buffer(states[i], actions[i], values[i], rewards[i],
-                                                                         dones[i], probabilities[i])
+                # If using team spirit, update the rewards to use the team spirit calculation
+                if multi_agent_settings.TEAM_SPIRIT[0]:
+                    rewards = self.calculate_team_spirit_rewards(rewards, team_reward)
+
+                # Add to the shared replay buffer (if shared)
+                if multi_agent_settings.SHARED_REPLAY_BUFFER:
+                    if self.agent_type == "ppo":
+                        self.agents[0].store_experience_in_replay_buffer(
+                            states, actions, values, rewards, dones, probabilities
+                        )
                     else:
-                        self.agents[i].store_experience_in_replay_buffer(states[i], actions[i], rewards[i],
-                                                                         next_states[i], dones[i])
-                    self.agents[i].learn()
+                        self.agents[0].store_experience_in_replay_buffer(
+                            states, actions, rewards, next_states, dones
+                        )
+                else:
+                    # Add to each agent's replay buffer (if not shared)
+                    for i in range(self.agent_count):
+                        if (infos["agents_previous_dones"][i]
+                                and multi_agent_settings.DEATH_HANDLING.lower() == "stop_adding"):
+                            continue
+
+                        if self.agent_type == "ppo":
+                            self.agents[i].store_experience_in_replay_buffer(
+                                states[i], actions[i], values[i], rewards[i], dones[i], probabilities[i]
+                            )
+                        else:
+                            self.agents[i].store_experience_in_replay_buffer(
+                                states[i], actions[i], rewards[i], next_states[i], dones[i]
+                            )
+
+                # If we are fully parameter sharing (both networks) AND only one update is needed, then only one
+                #   agent will call .learn() and update the networks, otherwise each agent calls .leanr() and updates
+                #   their networks, regardless of if they are sharing
+                if (multi_agent_settings.PARAMETER_SHARING[0].lower() == "full" and
+                        multi_agent_settings.PARAMETER_SHARING[1].lower() == "one_update" and
+                        multi_agent_settings.SHARED_REPLAY_BUFFER):
+                    self.agents[0].learn()
+                else:
+                    for agent in self.agents:
+                        agent.learn()
+
+                episode_reward += team_reward
+                states = next_states
+                self.steps += 1
 
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
                     optimal_policy_reward, optimal_policy_speed = self.test()
                     self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
                                                       ['Team Returns', 'Average Speed'])
-
-                episode_reward += team_reward
-                states = next_states
-                previous_dones = dones
-                self.steps += 1
             self.episode += 1
 
             # Output episode results
@@ -103,3 +139,9 @@ class MultiAgentRunner(AgentRunner):
         print(Fore.GREEN + "-------------\n" + Style.RESET_ALL)
 
         return episode_reward, avg_speed
+
+    @staticmethod
+    def calculate_team_spirit_rewards(individual_rewards, team_reward):
+        tau = multi_agent_settings.TEAM_SPIRIT[1]
+        team_spirited_rewards = tuple(((1 - tau) * reward) + (tau * team_reward) for reward in individual_rewards)
+        return team_spirited_rewards

@@ -27,6 +27,9 @@ class CustomEnvironmentWrapper(gym.Wrapper):
 
         return self._transform_state(states), infos
 
+    def get_global_state(self):
+        return self.env.get_global_state().flatten()
+
     def _transform_state(self, states):
         # All networks take in a flattened state
         states = [state.flatten() for state in states] if self.is_multi_agent else states.flatten()

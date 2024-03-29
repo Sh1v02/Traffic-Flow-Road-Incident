@@ -414,6 +414,16 @@ class Road(object):
         self.np_random = np_random if np_random else np.random.RandomState()
         self.record_history = record_history
 
+    # Returns all objects on the road
+    def get_all_objects(self):
+        vehicles = [v for v in self.vehicles]
+        obstacles = [o for o in self.objects]
+
+        objects_ = vehicles + obstacles
+
+        # objects_ = sorted(objects_)
+        return objects_
+
     def close_objects_to(
         self,
         vehicle: "kinematics.Vehicle",

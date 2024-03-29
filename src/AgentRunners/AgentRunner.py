@@ -13,17 +13,18 @@ from src.Utilities.Helper import Helper
 
 class AgentRunner(ABC):
     # Assumes that the child class has agents of only one type (eg: all PPO)
-    def __init__(self, env, test_env, agent, multi_agent=False):
+    def __init__(self, env, test_env, agent):
         self.env = env
         self.test_env = test_env
         self.steps = 0
         self.episode = 0
         self.max_steps = settings.TRAINING_STEPS
 
+        self.agent_type = settings.AGENT_TYPE.lower()
         self.start_time = time.time()
 
         self.rp = ResultsPlotter(agent)
-        self.rp.save_config_file(multi_agent=multi_agent)
+        self.rp.save_config_file()
 
         Helper.output_information("Device: " + DEVICE)
 
