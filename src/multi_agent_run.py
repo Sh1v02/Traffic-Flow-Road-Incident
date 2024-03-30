@@ -49,15 +49,19 @@ def run_multi_agent():
         settings.PLOT_STEPS_FREQUENCY = settings.PPO_UPDATE_FREQUENCY
 
     env, test_env = Helper.create_environments(multi_agent_config)
+    state_dims, action_dims = Helper.get_env_dims(env)
 
     replay_buffer = networks = None
     if multi_agent_settings.SHARED_REPLAY_BUFFER:
-        replay_buffer = AgentFactory.create_shared_replay_buffer()
+        replay_buffer = AgentFactory.create_shared_replay_buffer(state_dims, action_dims)
 
     if multi_agent_settings.PARAMETER_SHARING[0].lower() == "full":
-        networks = AgentFactory.create_fully_shared_networks(env)
+        networks = AgentFactory.create_fully_shared_networks(state_dims, action_dims)
 
-    agents = [AgentFactory.create_new_agent(env, replay_buffer, networks) for _ in range(multi_agent_settings.AGENT_COUNT)]
+    agents = [
+        AgentFactory.create_new_agent(state_dims, action_dims, env, replay_buffer, networks)
+        for _ in range(multi_agent_settings.AGENT_COUNT)
+    ]
 
     multi_agent_runner = MultiAgentRunner(env, test_env, agents)
     multi_agent_runner.train()

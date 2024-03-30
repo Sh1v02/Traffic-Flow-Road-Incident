@@ -1,14 +1,13 @@
-from src.Buffers.ReplayBuffer import ReplayBuffer
-
 import torch
 
+from src.Buffers.ReplayBuffer import ReplayBuffer
 from src.Wrappers.GPUSupport import tensor, optimise
 
 
 # TODO: GPU support
 # A cyclic buffer allowing constant time complexity O(1)
 class UniformExperienceReplayBuffer(ReplayBuffer):
-    def __init__(self, state_dims, action_dims, max_size=10000, actions_type=torch.float32):
+    def __init__(self, state_dims, action_dims=1, max_size=10000, actions_type=torch.float32):
         super().__init__(max_size)
 
         # Memory tensors

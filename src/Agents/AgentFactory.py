@@ -4,18 +4,16 @@ from src.Agents.DDPGAgent import DDPGAgent
 from src.Agents.DDQNAgent import DDQNAgent
 from src.Agents.PPOAgent import PPOAgent
 from src.Buffers import SharedPPOReplayBuffer
+from src.Buffers.SharedUniformExperienceReplayBuffer import SharedUniformExperienceReplayBuffer
 from src.Models import PPOActorNetwork, PPOCriticNetwork
 from src.Utilities import settings
-from src.Utilities.Helper import Helper
 
 
 class AgentFactory:
     @staticmethod
-    def create_new_agent(env, replay_buffer=None, networks=None):
-        state_dims, action_dims = Helper.get_env_dims(env)
-
+    def create_new_agent(state_dims, action_dims, env, replay_buffer=None, networks=None):
         if settings.AGENT_TYPE == "ddqn":
-            return DDQNAgent(state_dims, action_dims)
+            return DDQNAgent(state_dims, action_dims, replay_buffer=replay_buffer)
         if settings.AGENT_TYPE == "ppo":
             return PPOAgent(state_dims, action_dims, replay_buffer=replay_buffer, networks=networks)
         if settings.AGENT_TYPE == "ddpg":
@@ -24,14 +22,15 @@ class AgentFactory:
         raise Exception("No agent found with type: ", settings.AGENT_TYPE)
 
     @staticmethod
-    def create_shared_replay_buffer():
+    def create_shared_replay_buffer(state_dims, action_dims):
         if settings.AGENT_TYPE.lower() == "ppo":
             return SharedPPOReplayBuffer()
+        if settings.AGENT_TYPE.lower() == "ddqn":
+            return SharedUniformExperienceReplayBuffer(state_dims, max_size=settings.DDQN_REPLAY_BUFFER_SIZE,
+                                                       actions_type=torch.int32)
 
     @staticmethod
-    def create_fully_shared_networks(env, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss()):
-        state_dims, action_dims = Helper.get_env_dims(env)
-
+    def create_fully_shared_networks(state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss()):
         if settings.AGENT_TYPE.lower() == "ppo":
             return {
                 "actor": PPOActorNetwork(optimiser, loss, state_dims, action_dims,
