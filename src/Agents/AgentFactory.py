@@ -3,7 +3,7 @@ import torch
 from src.Agents.DDPGAgent import DDPGAgent
 from src.Agents.DDQNAgent import DDQNAgent
 from src.Agents.PPOAgent import PPOAgent
-from src.Buffers import PPOSharedReplayBuffer
+from src.Buffers import SharedPPOReplayBuffer
 from src.Models import PPOActorNetwork, PPOCriticNetwork
 from src.Utilities import settings
 from src.Utilities.Helper import Helper
@@ -26,7 +26,7 @@ class AgentFactory:
     @staticmethod
     def create_shared_replay_buffer():
         if settings.AGENT_TYPE.lower() == "ppo":
-            return PPOSharedReplayBuffer()
+            return SharedPPOReplayBuffer()
 
     @staticmethod
     def create_fully_shared_networks(env, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss()):

@@ -3,7 +3,7 @@ from src.Buffers.ReplayBuffer import ReplayBuffer
 from src.Utilities import multi_agent_settings
 
 
-class PPOSharedReplayBuffer(ReplayBuffer):
+class SharedPPOReplayBuffer(ReplayBuffer):
     def __init__(self):
         super().__init__(multi_agent_settings.AGENT_COUNT)
 
