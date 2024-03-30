@@ -163,6 +163,14 @@ class FreeGraphPlotter:
                     file_path = os.path.join(root, file)
                     FreeGraphPlotter.download_file(file_path, "rewards_" + str(download_count) + ".txt", save_directory)
                     download_count += 1
+                elif file == "config.txt":
+                    file_path = os.path.join(root, file)
+                    FreeGraphPlotter.download_file(file_path, "config.txt", save_directory)
+
+        for parent_dir in os.listdir(directory_to_search):
+            parent_dir_path = os.path.join(directory_to_search, parent_dir)
+            if os.path.isdir(parent_dir_path):
+                shutil.rmtree(parent_dir_path)
 
     @staticmethod
     def download_file(file_path, save_file_as, save_directory):
@@ -175,10 +183,16 @@ class FreeGraphPlotter:
 
 
 if __name__ == '__main__':
-    download_from = ''
-    download_to = ''
+    plots_dir = ""
 
-    # FreeGraphPlotter.download_txt_files(download_from, download_to)
-    FreeGraphPlotter.plot_multiple_individual_graphs("TestDownloads")
+    download_from = plots_dir + "4 Agents 9 Obstructions/Standard"
+    download_to = plots_dir + "4 Agents 9 Obstructions/Standard"
+
+    FreeGraphPlotter.download_txt_files(download_from, download_to)
+
+    average_dir = plots_dir + "4 Agents 9 Obstructions"
+    FreeGraphPlotter.plot_multiple_average_graphs(average_dir)
+
+    # FreeGraphPlotter.plot_multiple_individual_graphs("TestDownloads")
     # FreeGraphPlotter.plot_average("TestDownloads")
-    # FreeGraphPlotter.plot_multiple_average_graphs("TestDownloads_parent")
+
