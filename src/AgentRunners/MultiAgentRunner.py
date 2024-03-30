@@ -33,7 +33,7 @@ class MultiAgentRunner(AgentRunner):
         print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
-            states, infos = self.env.reset(seed=settings.SEED)
+            states, infos = self.env.reset()
 
             episode_reward = 0
             starting_episode_steps = self.steps
@@ -113,7 +113,7 @@ class MultiAgentRunner(AgentRunner):
 
     def test(self):
         done = False
-        states, infos = self.test_env.reset(seed=settings.SEED)
+        states, infos = self.test_env.reset()
 
         episode_steps = 0
         episode_reward = 0

@@ -23,7 +23,7 @@ class CustomEnvironmentWrapper(gym.Wrapper):
         return self._transform_state(next_state), reward, done, trunc, info
 
     def reset(self, **kwargs):
-        states, infos = self.env.reset(**kwargs)
+        states, infos = self.env.reset(seed=settings.ENVIRONMENT_SEED, **kwargs)
 
         return self._transform_state(states), infos
 

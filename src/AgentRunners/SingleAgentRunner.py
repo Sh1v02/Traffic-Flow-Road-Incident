@@ -26,7 +26,7 @@ class SingleAgentRunner(AgentRunner):
         print("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
-            state, info = self.env.reset(seed=settings.SEED)
+            state, info = self.env.reset()
 
             episode_reward = 0
             agent_speed = np.empty(0)
@@ -60,7 +60,7 @@ class SingleAgentRunner(AgentRunner):
 
     def test(self):
         done = False
-        state, info = self.test_env.reset(seed=settings.SEED)
+        state, info = self.test_env.reset()
 
         episode_steps = 0
         episode_reward = 0

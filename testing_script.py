@@ -5,7 +5,7 @@ from multiprocessing import Lock
 
 from colab_run_single_agent import configure_single_agent_on_colab
 from colab_run_multi_agent import configure_multi_agent_on_colab
-from src.Utilities import settings
+from src.Utilities import settings, multi_agent_settings
 from src.Utilities.Helper import Helper
 
 if __name__ == "__main__":

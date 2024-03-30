@@ -1,4 +1,3 @@
-import random
 import warnings
 
 from src.AgentRunners import MultiAgentRunner
@@ -42,11 +41,7 @@ multi_agent_config = {
 
 
 def run_multi_agent():
-    if settings.RANDOM_SEED:
-        settings.SEED = random.randint(0, 100)
-
-    if settings.AGENT_TYPE == "ppo" and settings.PPO_PLOT_STEPS_PER_UPDATE:
-        settings.PLOT_STEPS_FREQUENCY = settings.PPO_UPDATE_FREQUENCY
+    settings.configure_settings()
 
     env, test_env = Helper.create_environments(multi_agent_config)
     state_dims, action_dims = Helper.get_env_dims(env)
