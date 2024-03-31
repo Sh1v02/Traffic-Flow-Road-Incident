@@ -14,8 +14,9 @@ class QMIX(nn.Module):
         super().__init__()
         self.online_agent_networks = nn.ModuleList(
             [
-                QMIXAgentNetwork(None, None, local_state_dims, action_dims) for _ in
-                range(multi_agent_settings.AGENT_COUNT)
+                QMIXAgentNetwork(None, None, local_state_dims, action_dims,
+                                 hidden_layer_dims=settings.QMIX_AGENT_NETWORK_DIMS)
+                for _ in range(multi_agent_settings.AGENT_COUNT)
             ]
         )
         self.online_mixer_network = QMIXMixerNetwork(global_state_dims,

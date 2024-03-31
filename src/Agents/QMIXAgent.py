@@ -127,7 +127,8 @@ class QMIXAgent(Agent):
     def get_agent_specific_config(self):
         return {
             "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
-            "QMIX_NETWORK_DIMS": str(settings.QMIX_NETWORK_DIMS),
+            "QMIX_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
+            "QMIX_HYPER_NETWORK_DIMS": str(settings.QMIX_HYPER_NETWORK_DIMS),
             "QMIX_MIXER_NETWORK_DIMS": str(settings.QMIX_MIXER_NETWORK_DIMS),
             "QMIX_SOFT_UPDATE": str(settings.QMIX_SOFT_UPDATE),
             "QMIX_SOFT_UPDATE_TAU": str(settings.QMIX_SOFT_UPDATE_TAU),
