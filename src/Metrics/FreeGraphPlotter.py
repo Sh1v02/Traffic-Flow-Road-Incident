@@ -181,7 +181,7 @@ class FreeGraphPlotter:
         except Exception as e:
             print("Error downloading ", file_path, "\n", e)
 
-
+# TODO: Label the axis on the plots
 if __name__ == '__main__':
     plots_dir = ""
 

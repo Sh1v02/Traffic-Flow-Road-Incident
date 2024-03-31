@@ -1,6 +1,7 @@
 import warnings
 
 from src.AgentRunners import MultiAgentRunner
+from src.AgentRunners.QMIXAgentRunner import QMIXAgentRunner
 from src.Agents import AgentFactory
 from src.Utilities import settings, multi_agent_settings
 from src.Utilities.Helper import Helper
@@ -45,6 +46,14 @@ def run_multi_agent():
 
     env, test_env = Helper.create_environments(multi_agent_config)
     state_dims, action_dims = Helper.get_env_dims(env)
+
+    if settings.AGENT_TYPE.lower() == "qmix":
+        multi_agent_runner = QMIXAgentRunner(env, test_env, state_dims, len(env.get_global_state()), action_dims,
+                                             hidden_layer_dims=settings.QMIX_NETWORK_DIMS)
+        multi_agent_runner.train()
+        multi_agent_runner.save_final_results()
+        multi_agent_runner.test()
+        return
 
     replay_buffer = networks = None
     if multi_agent_settings.SHARED_REPLAY_BUFFER:
