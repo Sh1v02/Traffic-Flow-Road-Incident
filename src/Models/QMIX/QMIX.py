@@ -49,7 +49,7 @@ class QMIX(nn.Module):
         # Hard update -> we could just remove this bit, but even for the smallest efficiency keep it here
         if tau == 1:
             for i in range(multi_agent_settings.AGENT_COUNT):
-                self.target_networks[i].load_state_dict(self.online_networks[i].state_dict())
+                self.target_agent_networks[i].load_state_dict(self.online_agent_networks[i].state_dict())
             self.target_mixer_network.load_state_dict(self.online_mixer_network.state_dict())
             return
 

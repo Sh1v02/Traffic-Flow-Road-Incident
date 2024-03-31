@@ -55,7 +55,7 @@ class QMIXAgent(Agent):
             self.replay_buffer.sample_experience(batch_size=self.batch_size)
 
         # Get q-values based on the actions sampled
-        current_q_values = torch.zeros(self.batch_size, multi_agent_settings.AGENT_COUNT, self.action_dims)
+        current_q_values = optimise(torch.zeros(self.batch_size, multi_agent_settings.AGENT_COUNT, self.action_dims))
         for batch_index in range(len(local_states)):
             current_q_values[batch_index] = torch.stack(
                 [

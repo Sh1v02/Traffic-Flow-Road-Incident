@@ -43,6 +43,10 @@ class QMIXAgentRunner(AgentRunner):
 
                 rewards, dones = infos["agents_rewards"], infos["agents_dones"]
 
+                # If for training, we want to wait for all agents to be done before ending the episode, then update done
+                if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
+                    done = all(dones)
+
                 self.agent.store_experience_in_replay_buffer(
                     local_states, global_state, actions, rewards, next_local_states, next_global_state, dones
                 )
