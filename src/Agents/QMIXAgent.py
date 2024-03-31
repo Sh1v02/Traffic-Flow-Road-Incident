@@ -124,6 +124,7 @@ class QMIXAgent(Agent):
         return {
             "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
             "QMIX_NETWORK_DIMS": str(settings.QMIX_NETWORK_DIMS),
+            "QMIX_MIXER_NETWORK_DIMS": str(settings.QMIX_MIXER_NETWORK_DIMS),
             "QMIX_SOFT_UPDATE": str(settings.QMIX_SOFT_UPDATE),
             "QMIX_SOFT_UPDATE_TAU": str(settings.QMIX_SOFT_UPDATE_TAU),
             "QMIX_HARD_UPDATE_NETWORKS_FREQUENCY": str(settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY),
