@@ -24,8 +24,10 @@ class QMIXAgent(Agent):
 
         self.replay_buffer = QMIXExperienceReplayBuffer(local_state_dims, global_state_dims)
 
+        self.eval_parameters = (list(self.qmix.online_agent_networks.parameters()) +
+                                list(self.qmix.online_mixer_network.parameters()))
         optimiser_args = optimiser_args if optimiser_args else {}
-        self.optimiser = optimiser(self.qmix.parameters(), **optimiser_args)
+        self.optimiser = optimiser(self.eval_parameters, **optimiser_args)
 
         self.steps = 0
 
@@ -113,6 +115,8 @@ class QMIXAgent(Agent):
         self.optimiser.zero_grad()
         loss = self.qmix.loss(current_q_totals, targets)
         loss.backward()
+        if settings.QMIX_GRADIENT_CLIP:
+            torch.nn.utils.clip_grad_norm_(self.eval_parameters, 10)
         self.optimiser.step()
 
         if settings.QMIX_SOFT_UPDATE:

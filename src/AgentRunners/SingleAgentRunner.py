@@ -23,7 +23,7 @@ class SingleAgentRunner(AgentRunner):
         optimal_policy_reward, optimal_policy_speed = self.test()
         self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed)
 
-        print("\n\nBeginning Training")
+        Helper.output_information("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
             state, info = self.env.reset()

@@ -27,7 +27,7 @@ class QMIXAgentRunner(AgentRunner):
         self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
                                           ['Team Returns', 'Average Speed'])
 
-        print("\n\nBeginning Training")
+        Helper.output_information("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
             local_states, infos = self.env.reset()
