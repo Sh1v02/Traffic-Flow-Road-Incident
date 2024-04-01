@@ -63,7 +63,7 @@ class QMIXAgent(Agent):
             current_q_values[batch_index] = torch.stack(
                 [
                     self.qmix.online_agent_networks[i](local_states[batch_index]) for i in
-                    range(len(self.qmix.target_agent_networks))
+                    range(len(self.qmix.online_agent_networks))
                 ]
             )
 
@@ -83,13 +83,13 @@ class QMIXAgent(Agent):
             current_q_totals = self.qmix.online_mixer_network(current_single_q_values)
             current_q_totals = current_q_totals.squeeze(1)
 
-        # Get target q_values based on the max action from the online_agent networks
+        # Get target q_values based on the max action from the online_agent networks, for the next local states
         with torch.no_grad():
             target_q_values = optimise(torch.zeros(self.batch_size, multi_agent_settings.AGENT_COUNT, self.action_dims))
-            for batch_index in range(len(local_states)):
+            for batch_index in range(len(next_local_states)):
                 target_q_values[batch_index] = torch.stack(
                     [
-                        self.qmix.target_agent_networks[i](local_states[batch_index]) for i in
+                        self.qmix.target_agent_networks[i](next_local_states[batch_index]) for i in
                         range(len(self.qmix.target_agent_networks))
                     ]
                 )
@@ -111,8 +111,8 @@ class QMIXAgent(Agent):
         # Now take the q values that match the online networks best action in the next_local_state
         # Pass all of these into the target_mixer_network to get the target_q_totals
         if not settings.QMIX_USE_VDN_MIXER:
-            target_q_totals = self.qmix.target_mixer_network(target_single_q_values,
-                                                             global_states)  # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
+            target_q_totals = self.qmix.target_mixer_network(target_single_q_values, next_global_states)
+            # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
             target_q_totals = target_q_totals.squeeze(1).squeeze(1)
         else:
             target_q_totals = self.qmix.target_mixer_network(target_single_q_values)
