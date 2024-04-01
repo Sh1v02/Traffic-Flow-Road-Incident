@@ -171,6 +171,7 @@ class QMIXAgent(Agent):
     def get_agent_specific_config(self):
         return {
             "QMIX_USE_VDN_MIXER": str(settings.QMIX_USE_VDN_MIXER),
+            "QMIX_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
             "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
             "QMIX_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
             "QMIX_HYPER_NETWORK_DIMS": str(settings.QMIX_HYPER_NETWORK_DIMS),
