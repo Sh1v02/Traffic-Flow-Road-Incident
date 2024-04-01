@@ -5,6 +5,14 @@ from src.Utilities import multi_agent_settings
 from src.Wrappers.GPUSupport import optimise
 
 
+class VDNMixerNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, agent_q_values):
+        return torch.sum(agent_q_values, dim=-1, keepdim=True)
+
+
 class QMIXMixerNetwork(nn.Module):
     def __init__(self, global_state_dims, hyper_network_hidden_layer_dims=64, hidden_layer_dims=32):
         super().__init__()

@@ -5,6 +5,7 @@ from torch import nn
 
 from src.Models import QMIXMixerNetwork
 from src.Models.QMIX.QMIXAgentNetwork import QMIXAgentNetwork
+from src.Models.QMIX.QMIXMixerNetwork import VDNMixerNetwork
 from src.Utilities import multi_agent_settings, settings
 from src.Wrappers.GPUSupport import optimise
 
@@ -21,7 +22,8 @@ class QMIX(nn.Module):
         )
         self.online_mixer_network = QMIXMixerNetwork(global_state_dims,
                                                      hyper_network_hidden_layer_dims=hidden_layer_dims,
-                                                     hidden_layer_dims=settings.QMIX_MIXER_NETWORK_DIMS)
+                                                     hidden_layer_dims=settings.QMIX_MIXER_NETWORK_DIMS) if not (
+            settings.QMIX_USE_VDN_MIXER) else VDNMixerNetwork()
 
         # Create target networks
         self.target_agent_networks = nn.ModuleList(

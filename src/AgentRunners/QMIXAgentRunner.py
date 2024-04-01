@@ -51,7 +51,6 @@ class QMIXAgentRunner(AgentRunner):
                     local_states, global_state, actions, rewards, next_local_states, next_global_state, dones
                 )
 
-                self.agent.learn()
                 self.steps += 1
 
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
@@ -64,6 +63,7 @@ class QMIXAgentRunner(AgentRunner):
                 episode_reward += team_reward
 
             self.episode += 1
+            self.agent.learn()
 
             # Output episode results
             self.output_episode_results(episode_reward, self.steps - starting_episode_steps)

@@ -22,7 +22,8 @@ class QMIXAgent(Agent):
         self.epsilon_decay = settings.QMIX_EPSILON_DECAY
         self.min_epsilon = settings.QMIX_MIN_EPSILON
 
-        self.replay_buffer = QMIXExperienceReplayBuffer(local_state_dims, global_state_dims)
+        self.replay_buffer = QMIXExperienceReplayBuffer(local_state_dims, global_state_dims,
+                                                        max_size=settings.QMIX_REPLAY_BUFFER_SIZE)
 
         self.eval_parameters = (list(self.qmix.online_agent_networks.parameters()) +
                                 list(self.qmix.online_mixer_network.parameters()))
@@ -49,7 +50,7 @@ class QMIXAgent(Agent):
 
     def learn(self):
         self.steps += 1
-        if self.steps < self.batch_size:
+        if self.replay_buffer.size < self.batch_size:
             return
 
         # TODO: Change the batch size
@@ -74,10 +75,13 @@ class QMIXAgent(Agent):
                 current_single_q_values = torch.cat((current_single_q_values, current_q_values[:, i, :][
                     np.arange(self.batch_size), actions].unsqueeze(1)), dim=1)
         # Get the current_q_totals
-        current_q_totals = self.qmix.online_mixer_network(current_single_q_values, global_states)
-
-        # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
-        current_q_totals = current_q_totals.squeeze(1).squeeze(1)
+        if not settings.QMIX_USE_VDN_MIXER:
+            current_q_totals = self.qmix.online_mixer_network(current_single_q_values, global_states)
+            # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
+            current_q_totals = current_q_totals.squeeze(1).squeeze(1)
+        else:
+            current_q_totals = self.qmix.online_mixer_network(current_single_q_values)
+            current_q_totals = current_q_totals.squeeze(1)
 
         # Get target q_values based on the max action from the online_agent networks
         with torch.no_grad():
@@ -106,10 +110,14 @@ class QMIXAgent(Agent):
 
         # Now take the q values that match the online networks best action in the next_local_state
         # Pass all of these into the target_mixer_network to get the target_q_totals
-        target_q_totals = self.qmix.target_mixer_network(target_single_q_values, global_states)
+        if not settings.QMIX_USE_VDN_MIXER:
+            target_q_totals = self.qmix.target_mixer_network(target_single_q_values,
+                                                             global_states)  # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
+            target_q_totals = target_q_totals.squeeze(1).squeeze(1)
+        else:
+            target_q_totals = self.qmix.target_mixer_network(target_single_q_values)
+            target_q_totals = target_q_totals.squeeze(1)
 
-        # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
-        target_q_totals = target_q_totals.squeeze(1).squeeze(1)
         targets = rewards + (self.gamma * (1 - dones) * target_q_totals)
 
         self.optimiser.zero_grad()
@@ -126,6 +134,7 @@ class QMIXAgent(Agent):
 
     def get_agent_specific_config(self):
         return {
+            "QMIX_USE_VDN_MIXER": str(settings.QMIX_USE_VDN_MIXER),
             "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
             "QMIX_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
             "QMIX_HYPER_NETWORK_DIMS": str(settings.QMIX_HYPER_NETWORK_DIMS),
@@ -138,4 +147,5 @@ class QMIXAgent(Agent):
             "QMIX_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
             "QMIX_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON),
             "QMIX_LR": str(settings.QMIX_LR),
+            "QMIX_GRADIENT_CLIP": str(settings.QMIX_GRADIENT_CLIP)
         }
