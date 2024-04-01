@@ -38,14 +38,9 @@ class QMIX(nn.Module):
 
         optimise(self)
 
-    def get_q_values(self, local_states, target_networks=False):
-        if not target_networks:
-            agent_q_values = [self.online_agent_networks[i](local_states[i]) for i in
-                              range(len(self.online_agent_networks))]
-            return agent_q_values
-
-        agent_q_values = [self.target_agent_networks[i](local_states[i]) for i in
-                          range(len(self.target_agent_networks))]
+    def get_q_values(self, local_states):
+        agent_q_values = [self.online_agent_networks[i](local_states[i]) for i in
+                          range(len(self.online_agent_networks))]
         return agent_q_values
 
     def update_target_networks(self, tau=1):

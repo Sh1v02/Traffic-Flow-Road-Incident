@@ -37,7 +37,7 @@ class QMIXAgent(Agent):
 
     def get_action(self, local_states: torch.Tensor, training=True):
         random_action = training and random.uniform(0, 1) <= self.epsilon
-        self.epsilon = max(self.epsilon * self.epsilon_decay, self.min_epsilon)
+        self.epsilon = max(self.epsilon * self.epsilon_decay, self.min_epsilon) if training else self.epsilon
 
         if random_action:
             actions = tuple(random.randint(0, self.action_dims - 1) for _ in range(multi_agent_settings.AGENT_COUNT))
