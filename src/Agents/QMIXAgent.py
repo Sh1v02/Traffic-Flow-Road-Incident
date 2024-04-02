@@ -173,6 +173,7 @@ class QMIXAgent(Agent):
             "QMIX_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
             "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
             "QMIX_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
+            "QMIX_HYPER_NETWORK_LAYERS": str(settings.QMIX_HYPER_NETWORK_LAYERS),
             "QMIX_HYPER_NETWORK_DIMS": str(settings.QMIX_HYPER_NETWORK_DIMS),
             "QMIX_MIXER_NETWORK_DIMS": str(settings.QMIX_MIXER_NETWORK_DIMS),
             "QMIX_SOFT_UPDATE": str(settings.QMIX_SOFT_UPDATE),
