@@ -11,9 +11,8 @@ from src.Wrappers.GPUSupport import optimise
 
 
 class QMIXAgent(Agent):
-    def __init__(self, optimiser, local_state_dims, global_state_dims, action_dims,
-                 hidden_layer_dims=64, optimiser_args=None):
-        self.qmix = QMIX(local_state_dims, global_state_dims, action_dims, hidden_layer_dims=hidden_layer_dims)
+    def __init__(self, optimiser, local_state_dims, global_state_dims, action_dims, optimiser_args=None):
+        self.qmix = QMIX(local_state_dims, global_state_dims, action_dims)
         self.action_dims = action_dims
 
         self.gamma = settings.QMIX_DISCOUNT_FACTOR

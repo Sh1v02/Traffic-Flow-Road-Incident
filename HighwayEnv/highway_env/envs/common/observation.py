@@ -12,6 +12,7 @@ from HighwayEnv.highway_env.envs.common.graphics import EnvViewer
 from HighwayEnv.highway_env.road.lane import AbstractLane
 from HighwayEnv.highway_env.utils import Vector
 from HighwayEnv.highway_env.vehicle.kinematics import Vehicle
+from src.Utilities import settings
 
 if TYPE_CHECKING:
     from HighwayEnv.highway_env.envs.common.abstract import AbstractEnv
@@ -243,7 +244,7 @@ class KinematicObservation(ObservationType):
         df = df[self.features]
 
         # Normalize and clip
-        if self.normalize:
+        if settings.NORMALIZE_GLOBAL_STATE:
             df = self.normalize_obs(df)
 
         # Reorder

@@ -11,7 +11,7 @@ from src.Wrappers.GPUSupport import optimise
 
 
 class QMIX(nn.Module):
-    def __init__(self, local_state_dims, global_state_dims, action_dims, hidden_layer_dims=64, loss=torch.nn.MSELoss()):
+    def __init__(self, local_state_dims, global_state_dims, action_dims, loss=torch.nn.MSELoss()):
         super().__init__()
         self.shared_agent_net = settings.QMIX_AGENT_NETWORKS_SHARED
         if self.shared_agent_net:
@@ -35,10 +35,8 @@ class QMIX(nn.Module):
                 ]
             )
 
-        self.online_mixer_network = QMIXMixerNetwork(global_state_dims,
-                                                     hyper_network_hidden_layer_dims=hidden_layer_dims,
-                                                     hidden_layer_dims=settings.QMIX_MIXER_NETWORK_DIMS) if not (
-            settings.QMIX_USE_VDN_MIXER) else VDNMixerNetwork()
+        self.online_mixer_network = QMIXMixerNetwork(global_state_dims) if not settings.QMIX_USE_VDN_MIXER \
+            else (VDNMixerNetwork())
 
         self.target_mixer_network = optimise(deepcopy(self.online_mixer_network))
 

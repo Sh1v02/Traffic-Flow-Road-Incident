@@ -10,9 +10,9 @@ from src.Utilities.Helper import Helper
 
 
 class QMIXAgentRunner(AgentRunner):
-    def __init__(self, env, test_env, local_state_dims, global_state_dims, action_dims, hidden_layer_dims=64):
+    def __init__(self, env, test_env, local_state_dims, global_state_dims, action_dims):
         self.agent = QMIXAgent(torch.optim.Adam, local_state_dims, global_state_dims, action_dims,
-                               hidden_layer_dims=hidden_layer_dims, optimiser_args={"lr": settings.QMIX_LR})
+                               optimiser_args={"lr": settings.QMIX_LR})
 
         super().__init__(env, test_env, self.agent)
 

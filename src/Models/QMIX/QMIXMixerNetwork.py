@@ -14,37 +14,46 @@ class VDNMixerNetwork(nn.Module):
 
 
 class QMIXMixerNetwork(nn.Module):
-    def __init__(self, global_state_dims, hyper_network_hidden_layer_dims=64, hidden_layer_dims=32):
+    def __init__(self, global_state_dims):
         super().__init__()
         self.shared_agent_net = settings.QMIX_AGENT_NETWORKS_SHARED
-        self.hidden_layer_dims = hidden_layer_dims
+        self.hidden_layer_dims = settings.QMIX_MIXER_NETWORK_DIMS
 
-        self.hyper_network_for_input_layer_weights = optimise(
-            nn.Sequential(
-                nn.Linear(global_state_dims, hyper_network_hidden_layer_dims),
-                nn.ReLU(),
-                nn.Linear(hyper_network_hidden_layer_dims, hidden_layer_dims * (1 if self.shared_agent_net else
-                                                                                multi_agent_settings.AGENT_COUNT))
+        if settings.QMIX_HYPER_NETWORK_LAYERS == 1:
+            self.hyper_network_for_input_layer_weights = optimise(
+                nn.Linear(global_state_dims, settings.QMIX_MIXER_NETWORK_DIMS *
+                          (1 if self.shared_agent_net else multi_agent_settings.AGENT_COUNT))
             )
-        )
+            self.hyper_network_for_output_layer_weights = optimise(
+                nn.Linear(global_state_dims, settings.QMIX_MIXER_NETWORK_DIMS)
+            )
+        else:
+            self.hyper_network_for_input_layer_weights = optimise(
+                nn.Sequential(
+                    nn.Linear(global_state_dims, settings.QMIX_HYPER_NETWORK_DIMS),
+                    nn.ReLU(),
+                    nn.Linear(settings.QMIX_HYPER_NETWORK_DIMS, settings.QMIX_MIXER_NETWORK_DIMS *
+                              (1 if self.shared_agent_net else multi_agent_settings.AGENT_COUNT))
+                )
+            )
 
-        self.hyper_network_for_output_layer_weights = optimise(
-            nn.Sequential(
-                nn.Linear(global_state_dims, hyper_network_hidden_layer_dims),
-                nn.ReLU(),
-                nn.Linear(hyper_network_hidden_layer_dims, hidden_layer_dims)
+            self.hyper_network_for_output_layer_weights = optimise(
+                nn.Sequential(
+                    nn.Linear(global_state_dims, settings.QMIX_HYPER_NETWORK_DIMS),
+                    nn.ReLU(),
+                    nn.Linear(settings.QMIX_HYPER_NETWORK_DIMS, settings.QMIX_MIXER_NETWORK_DIMS)
+                )
             )
-        )
 
         self.hyper_network_for_input_layer_bias = optimise(
-            nn.Linear(global_state_dims, hidden_layer_dims)
+            nn.Linear(global_state_dims, settings.QMIX_MIXER_NETWORK_DIMS)
 
         )
         self.hyper_network_for_output_layer_bias = optimise(
             nn.Sequential(
-                nn.Linear(global_state_dims, hidden_layer_dims),
+                nn.Linear(global_state_dims, settings.QMIX_MIXER_NETWORK_DIMS),
                 nn.ReLU(),
-                nn.Linear(hidden_layer_dims, 1)
+                nn.Linear(settings.QMIX_MIXER_NETWORK_DIMS, 1)
             )
         )
 
