@@ -47,7 +47,7 @@ def run_multi_agent():
     env, test_env = Helper.create_environments(multi_agent_config)
     state_dims, action_dims = Helper.get_env_dims(env)
 
-    if settings.AGENT_TYPE.lower() == "qmix":
+    if settings.AGENT_TYPE.lower() == "qmix" or settings.AGENT_TYPE.lower() == "vdn":
         multi_agent_runner = QMIXAgentRunner(env, test_env, state_dims, len(env.get_global_state()), action_dims,
                                              hidden_layer_dims=settings.QMIX_HYPER_NETWORK_DIMS)
         multi_agent_runner.train()
