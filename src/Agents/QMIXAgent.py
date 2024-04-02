@@ -179,6 +179,7 @@ class QMIXAgent(Agent):
             "QMIX_SOFT_UPDATE": str(settings.QMIX_SOFT_UPDATE),
             "QMIX_SOFT_UPDATE_TAU": str(settings.QMIX_SOFT_UPDATE_TAU),
             "QMIX_HARD_UPDATE_NETWORKS_FREQUENCY": str(settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY),
+            "QMIX_REPLAY_BUFFER_SIZE": str(settings.QMIX_REPLAY_BUFFER_SIZE),
             "QMIX_BATCH_SIZE": str(settings.QMIX_BATCH_SIZE),
             "QMIX_EPSILON": str(settings.QMIX_EPSILON),
             "QMIX_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
