@@ -15,7 +15,7 @@ class ResultsPlotter:
         self.reward_history = np.empty(0)
         self.speed_history = np.empty(0)
 
-    def save_final_results(self, episode_reached):
+    def save_final_results(self):
         self.plot_graph(self.steps_history, self.reward_history, "rewards", save_dir=settings.SAVE_DIR)
         self.plot_graph(self.steps_history, self.speed_history, "speed_history", save_dir=settings.SAVE_DIR,
                         labels=['Steps', 'Speed'])

@@ -41,6 +41,8 @@ class AgentRunner(ABC):
         print("  - Reward: ", episode_reward)
         print("  - Total Steps: ", self.steps, "/", self.max_steps)
         print("  - Episode Steps: ", episode_steps)
+        print("  - Optimal Policy Rewards > 70: ", np.sum(self.rp.reward_history >= 70))
+        print("  - Optimal Policy Rewards > 80: ", np.sum(self.rp.reward_history >= 80))
         print("  - Max Optimal Policy Reward: ", np.max(self.rp.reward_history))
         if len(self.rp.reward_history) >= 100:
             print("  - Rolling Average (100 optimal policy tests): ", np.mean(self.rp.reward_history[-100:]))
@@ -68,7 +70,7 @@ class AgentRunner(ABC):
                 self.summary_writer.flush()
 
     def save_final_results(self):
-        self.rp.save_final_results(self.episode)
+        self.rp.save_final_results()
         print("Results saved to: ", settings.SAVE_DIR)
 
     def output_remaining_time(self, steps_to_estimate_from=1000):

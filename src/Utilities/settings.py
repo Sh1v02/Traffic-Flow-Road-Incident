@@ -18,7 +18,7 @@ TRAINING_STEPS = 300_000
 RENDER_ENVIRONMENT = True
 RECORD_EPISODES = [False, 500]
 LOG_TENSORBOARD = False
-NORMALIZE_GLOBAL_STATE = False
+NORMALIZE_GLOBAL_STATE = True
 
 # -------------------------- DDQN Settings ----------------------------
 DDQN_NETWORK_DIMS = [256, 256]
