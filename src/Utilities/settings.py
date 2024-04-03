@@ -66,6 +66,7 @@ QMIX_REPLAY_BUFFER_SIZE = 10000
 QMIX_GRADIENT_CLIP = False
 QMIX_AGENT_NETWORKS_SHARED = True
 QMIX_USE_VDN_MIXER = AGENT_TYPE.lower() == "vdn"
+QMIX_LEARN_PER_EPISODE = True
 QMIX_PLOT_STEPS_PER_UPDATE = True
 
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")

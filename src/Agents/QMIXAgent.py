@@ -182,7 +182,8 @@ class QMIXAgent(Agent):
                 "VDN_BATCH_SIZE": str(settings.QMIX_BATCH_SIZE),
                 "VDN_EPSILON": str(settings.QMIX_EPSILON),
                 "VDN_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
-                "VDN_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON)
+                "VDN_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON),
+                "VDN_LEARN_PER_EPISODE": str(settings.QMIX_LEARN_PER_EPISODE)
             }
 
         return {
@@ -201,5 +202,6 @@ class QMIXAgent(Agent):
             "QMIX_BATCH_SIZE": str(settings.QMIX_BATCH_SIZE),
             "QMIX_EPSILON": str(settings.QMIX_EPSILON),
             "QMIX_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
-            "QMIX_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON)
+            "QMIX_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON),
+            "QMIX_LEARN_PER_EPISODE": str(settings.QMIX_LEARN_PER_EPISODE)
         }

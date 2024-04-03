@@ -61,10 +61,12 @@ class QMIXAgentRunner(AgentRunner):
                 local_states = next_local_states
                 global_state = next_global_state
                 episode_reward += team_reward
-                self.agent.learn()
+                if not settings.QMIX_LEARN_PER_EPISODE:
+                    self.agent.learn()
 
             self.episode += 1
-            # self.agent.learn()
+            if settings.QMIX_LEARN_PER_EPISODE:
+                self.agent.learn()
 
             # Output episode results
             self.output_episode_results(episode_reward, self.steps - starting_episode_steps)
