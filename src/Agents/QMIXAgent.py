@@ -168,10 +168,28 @@ class QMIXAgent(Agent):
             self.qmix.update_target_networks()
 
     def get_agent_specific_config(self):
+        if settings.QMIX_USE_VDN_MIXER:
+            return {
+                "VDN_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
+                "VDN_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
+                "VDN_LR": str(settings.QMIX_LR),
+                "VDN_GRADIENT_CLIP": str(settings.QMIX_GRADIENT_CLIP),
+                "VDN_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
+                "VDN_SOFT_UPDATE": str(settings.QMIX_SOFT_UPDATE),
+                "VDN_SOFT_UPDATE_TAU": str(settings.QMIX_SOFT_UPDATE_TAU),
+                "VDN_HARD_UPDATE_NETWORKS_FREQUENCY": str(settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY),
+                "VDN_REPLAY_BUFFER_SIZE": str(settings.QMIX_REPLAY_BUFFER_SIZE),
+                "VDN_BATCH_SIZE": str(settings.QMIX_BATCH_SIZE),
+                "VDN_EPSILON": str(settings.QMIX_EPSILON),
+                "VDN_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
+                "VDN_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON)
+            }
+
         return {
-            "QMIX_USE_VDN_MIXER": str(settings.QMIX_USE_VDN_MIXER),
             "QMIX_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
             "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
+            "QMIX_LR": str(settings.QMIX_LR),
+            "QMIX_GRADIENT_CLIP": str(settings.QMIX_GRADIENT_CLIP),
             "QMIX_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
             "QMIX_HYPER_NETWORK_LAYERS": str(settings.QMIX_HYPER_NETWORK_LAYERS),
             "QMIX_HYPER_NETWORK_DIMS": str(settings.QMIX_HYPER_NETWORK_DIMS),
@@ -183,7 +201,5 @@ class QMIXAgent(Agent):
             "QMIX_BATCH_SIZE": str(settings.QMIX_BATCH_SIZE),
             "QMIX_EPSILON": str(settings.QMIX_EPSILON),
             "QMIX_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
-            "QMIX_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON),
-            "QMIX_LR": str(settings.QMIX_LR),
-            "QMIX_GRADIENT_CLIP": str(settings.QMIX_GRADIENT_CLIP)
+            "QMIX_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON)
         }

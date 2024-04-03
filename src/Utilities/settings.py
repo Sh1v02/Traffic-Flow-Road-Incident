@@ -48,7 +48,6 @@ PPO_BATCH_SIZE = 512
 PPO_UPDATE_FREQUENCY = 1536
 PPO_PLOT_STEPS_PER_UPDATE = True
 
-
 # -------------------------- QMIX Settings ----------------------------
 QMIX_AGENT_NETWORK_DIMS = [256, 256]
 QMIX_HYPER_NETWORK_LAYERS = 1
@@ -67,8 +66,7 @@ QMIX_REPLAY_BUFFER_SIZE = 10000
 QMIX_GRADIENT_CLIP = False
 QMIX_AGENT_NETWORKS_SHARED = True
 QMIX_USE_VDN_MIXER = AGENT_TYPE.lower() == "vdn"
-
-
+QMIX_PLOT_STEPS_PER_UPDATE = True
 
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
 
@@ -195,8 +193,10 @@ def configure_settings():
     if RANDOM_SEED:
         SEED = random.randint(0, 100)
 
-    if AGENT_TYPE == "ppo" and PPO_PLOT_STEPS_PER_UPDATE:
+    if AGENT_TYPE.lower() == "ppo" and PPO_PLOT_STEPS_PER_UPDATE:
         PLOT_STEPS_FREQUENCY = PPO_UPDATE_FREQUENCY
+    elif (AGENT_TYPE.lower() == "qmix" or AGENT_TYPE.lower() == "vdn") and QMIX_PLOT_STEPS_PER_UPDATE:
+        PLOT_STEPS_FREQUENCY = QMIX_HARD_UPDATE_NETWORKS_FREQUENCY
 
     torch.manual_seed(SEED)
     torch.cuda.manual_seed(SEED)

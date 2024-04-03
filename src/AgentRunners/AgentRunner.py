@@ -41,8 +41,8 @@ class AgentRunner(ABC):
         print("  - Reward: ", episode_reward)
         print("  - Total Steps: ", self.steps, "/", self.max_steps)
         print("  - Episode Steps: ", episode_steps)
-        print("  - Optimal Policy Rewards > 70: ", np.sum(self.rp.reward_history >= 70))
-        print("  - Optimal Policy Rewards > 80: ", np.sum(self.rp.reward_history >= 80))
+        # print("  - Optimal Policy Rewards > 70: ", np.sum(self.rp.reward_history >= 70))
+        # print("  - Optimal Policy Rewards > 80: ", np.sum(self.rp.reward_history >= 80))
         print("  - Max Optimal Policy Reward: ", np.max(self.rp.reward_history))
         if len(self.rp.reward_history) >= 100:
             print("  - Rolling Average (100 optimal policy tests): ", np.mean(self.rp.reward_history[-100:]))
