@@ -66,7 +66,6 @@ QMIX_DISCOUNT_FACTOR = 0.99
 QMIX_LR = 5e-4
 QMIX_REPLAY_BUFFER_SIZE = 10000
 QMIX_GRADIENT_CLIP = False
-QMIX_USE_VDN_MIXER = AGENT_TYPE.lower() == "vdn"
 QMIX_LEARN_PER_EPISODE = AGENT_TYPE.lower() == "qmix"
 
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")

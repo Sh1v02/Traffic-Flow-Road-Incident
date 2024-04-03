@@ -65,7 +65,7 @@ class QMIXAgent(Agent):
         # Get q-values based on the actions sampled
         current_single_q_values = current_q_values[torch.arange(self.batch_size), :, actions]
         # Get the current_q_totals
-        if not settings.QMIX_USE_VDN_MIXER:
+        if settings.AGENT_TYPE.lower() == "qmix":
             current_q_totals = self.qmix.online_mixer_network(current_single_q_values, global_states)
             # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
             current_q_totals = current_q_totals.squeeze(1).squeeze(1)
@@ -95,7 +95,7 @@ class QMIXAgent(Agent):
 
         # Now take the q values that match the online networks best action in the next_local_state
         # Pass all of these into the target_mixer_network to get the target_q_totals
-        if not settings.QMIX_USE_VDN_MIXER:
+        if settings.AGENT_TYPE.lower() == "qmix":
             target_q_totals = self.qmix.target_mixer_network(target_single_q_values, next_global_states)
             # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
             target_q_totals = target_q_totals.squeeze(1).squeeze(1)
@@ -126,7 +126,7 @@ class QMIXAgent(Agent):
         # Get q-values based on the actions sampled
         current_single_q_values = current_q_values[torch.arange(self.batch_size), :, actions]
         # Get the current_q_totals
-        if not settings.QMIX_USE_VDN_MIXER:
+        if settings.AGENT_TYPE.lower() == "qmix":
             current_q_totals = self.qmix.online_mixer_network(current_single_q_values, global_states)
             # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
             current_q_totals = current_q_totals.squeeze(1).squeeze(1)
@@ -145,7 +145,7 @@ class QMIXAgent(Agent):
 
         # Now take the q values that match the online networks best action in the next_local_state
         # Pass all of these into the target_mixer_network to get the target_q_totals
-        if not settings.QMIX_USE_VDN_MIXER:
+        if settings.AGENT_TYPE.lower() == "qmix":
             target_q_totals = self.qmix.target_mixer_network(target_single_q_values, next_global_states)
             # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
             target_q_totals = target_q_totals.squeeze(1).squeeze(1)
@@ -168,7 +168,7 @@ class QMIXAgent(Agent):
             self.qmix.update_target_networks()
 
     def get_agent_specific_config(self):
-        if settings.QMIX_USE_VDN_MIXER:
+        if settings.AGENT_TYPE.lower() == "vdn":
             return {
                 "VDN_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
                 "VDN_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),

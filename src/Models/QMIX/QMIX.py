@@ -35,7 +35,7 @@ class QMIX(nn.Module):
                 ]
             )
 
-        self.online_mixer_network = QMIXMixerNetwork(global_state_dims) if not settings.QMIX_USE_VDN_MIXER \
+        self.online_mixer_network = QMIXMixerNetwork(global_state_dims) if settings.AGENT_TYPE.lower() == "qmix" \
             else (VDNMixerNetwork())
 
         self.target_mixer_network = optimise(deepcopy(self.online_mixer_network))
