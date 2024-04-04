@@ -10,7 +10,8 @@ class VDNMixerNetwork(nn.Module):
         super().__init__()
 
     def forward(self, agent_q_values):
-        return torch.sum(agent_q_values, dim=-1, keepdim=True)
+        # Change shapes: (self.batch_size, 1, 1) -> (self.batch_size)
+        return torch.sum(agent_q_values, dim=-1, keepdim=True).squeeze(1)
 
 
 class QMIXMixerNetwork(nn.Module):
@@ -84,4 +85,6 @@ class QMIXMixerNetwork(nn.Module):
 
         q_total = torch.bmm(mixer_layer_1_output, weights_final) + bias_final
         q_total = q_total.view(32, -1, 1)
-        return q_total
+
+        # Change shapes: (self.batch_size, 1, 1) -> (self.batch_size)
+        return q_total.squeeze(1).squeeze(1)

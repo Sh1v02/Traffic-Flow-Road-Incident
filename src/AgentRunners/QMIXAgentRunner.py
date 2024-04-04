@@ -12,7 +12,7 @@ from src.Utilities.Helper import Helper
 class QMIXAgentRunner(AgentRunner):
     def __init__(self, env, test_env, local_state_dims, global_state_dims, action_dims):
         self.agent = QMIXAgent(torch.optim.Adam, local_state_dims, global_state_dims, action_dims,
-                               optimiser_args={"lr": settings.QMIX_LR})
+                               optimiser_args={"lr": settings.QMIX_LR[0]})
 
         super().__init__(env, test_env, self.agent)
 
@@ -66,7 +66,7 @@ class QMIXAgentRunner(AgentRunner):
 
             self.episode += 1
             if settings.QMIX_LEARN_PER_EPISODE:
-                self.agent.learn()
+                self.agent.learn(self.steps)
 
             # Output episode results
             self.output_episode_results(episode_reward, self.steps - starting_episode_steps)

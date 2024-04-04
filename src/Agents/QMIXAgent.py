@@ -2,6 +2,7 @@ import random
 
 import numpy as np
 import torch
+from torch.optim.lr_scheduler import ExponentialLR
 
 from src.Agents.Agent import Agent
 from src.Buffers.QMIXExperienceReplayBuffer import QMIXExperienceReplayBuffer
@@ -29,6 +30,12 @@ class QMIXAgent(Agent):
         optimiser_args = optimiser_args if optimiser_args else {}
         self.optimiser = optimiser(self.eval_parameters, **optimiser_args)
 
+        # LR decay setup
+        if settings.QMIX_LR[3]:
+            self.lr_decay_steps = settings.QMIX_LR[2]
+            self.lr_starting_value = settings.QMIX_LR[0]
+            self.lr_decay_factor = settings.QMIX_LR[1] / settings.QMIX_LR[0]
+
         self.steps = 0
 
     def store_experience_in_replay_buffer(self, *args):
@@ -47,31 +54,70 @@ class QMIXAgent(Agent):
 
         return actions
 
-    def learn(self):
-        self.steps += 1
+    def learn(self, steps=None):
+        self.steps = steps if steps else self.steps + 1
         if self.replay_buffer.size < self.batch_size:
-            return
-
-        if self.qmix.shared_agent_net:
-            self._learn_shared_agents()
             return
 
         local_states, global_states, actions, rewards, next_local_states, next_global_states, dones = \
             self.replay_buffer.sample_experience(batch_size=self.batch_size)
 
+        if self.qmix.shared_agent_net:
+            current_single_q_values, target_single_q_values = self._learn_shared_agents(local_states, actions,
+                                                                                        next_local_states)
+        else:
+            current_single_q_values, target_single_q_values = self._learn_unshared_agents(local_states, actions,
+                                                                                          next_local_states)
+
+        # Get the current_q_totals and target_q_totals
+        if settings.AGENT_TYPE.lower() == "qmix":
+            current_q_totals = self.qmix.online_mixer_network(current_single_q_values, global_states)
+            target_q_totals = self.qmix.target_mixer_network(target_single_q_values, next_global_states)
+        else:
+            current_q_totals = self.qmix.online_mixer_network(current_single_q_values)
+            target_q_totals = self.qmix.target_mixer_network(target_single_q_values)
+
+        targets = rewards + (self.gamma * (1 - dones) * target_q_totals)
+
+        self.optimiser.zero_grad()
+        loss = self.qmix.loss(current_q_totals, targets)
+        loss.backward()
+        if settings.QMIX_GRADIENT_CLIP:
+            torch.nn.utils.clip_grad_norm_(self.eval_parameters, 10)
+        self.optimiser.step()
+
+        if settings.QMIX_SOFT_UPDATE:
+            self.qmix.update_target_networks(tau=settings.QMIX_SOFT_UPDATE_TAU)
+        elif self.steps % settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY == 0:
+            self.qmix.update_target_networks()
+
+        if settings.QMIX_LR[3]:
+            self.decay_lr()
+
+    def _learn_shared_agents(self, local_states, actions, next_local_states):
+
+        current_q_values = self.qmix.online_agent_networks(local_states).unsqueeze(1)
+
+        # Get q-values based on the actions sampled
+        current_single_q_values = current_q_values[torch.arange(self.batch_size), :, actions]
+
+        # Get target q_values based on the max action from the online_agent networks, for the next local states
+        with torch.no_grad():
+            target_q_values = self.qmix.target_agent_networks(next_local_states).unsqueeze(1)
+
+            actions_for_next_state_max_q_values = self.qmix.online_agent_networks(next_local_states).max(dim=1)[1]
+
+            target_single_q_values = target_q_values[
+                                     torch.arange(self.batch_size), :, actions_for_next_state_max_q_values]
+
+        return current_single_q_values, target_single_q_values
+
+    def _learn_unshared_agents(self, local_states, actions, next_local_states):
         current_q_values = torch.concat(tuple(self.qmix.online_agent_networks[i](local_states).unsqueeze(1) for i in
                                               range(multi_agent_settings.AGENT_COUNT)), dim=1)
 
         # Get q-values based on the actions sampled
         current_single_q_values = current_q_values[torch.arange(self.batch_size), :, actions]
-        # Get the current_q_totals
-        if settings.AGENT_TYPE.lower() == "qmix":
-            current_q_totals = self.qmix.online_mixer_network(current_single_q_values, global_states)
-            # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
-            current_q_totals = current_q_totals.squeeze(1).squeeze(1)
-        else:
-            current_q_totals = self.qmix.online_mixer_network(current_single_q_values)
-            current_q_totals = current_q_totals.squeeze(1)
 
         # Get target q_values based on the max action from the online_agent networks, for the next local states
         with torch.no_grad():
@@ -93,79 +139,16 @@ class QMIXAgent(Agent):
                     target_single_q_values = torch.cat((target_single_q_values, target_q_values[:, i, :][
                         np.arange(self.batch_size), actions_for_next_state_max_q_values[i]].unsqueeze(1)), dim=1)
 
-        # Now take the q values that match the online networks best action in the next_local_state
-        # Pass all of these into the target_mixer_network to get the target_q_totals
-        if settings.AGENT_TYPE.lower() == "qmix":
-            target_q_totals = self.qmix.target_mixer_network(target_single_q_values, next_global_states)
-            # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
-            target_q_totals = target_q_totals.squeeze(1).squeeze(1)
-        else:
-            target_q_totals = self.qmix.target_mixer_network(target_single_q_values)
-            target_q_totals = target_q_totals.squeeze(1)
+        return current_single_q_values, target_single_q_values
 
-        targets = rewards + (self.gamma * (1 - dones) * target_q_totals)
+    def decay_lr(self):
+        # Don't decay past the max number of steps to decay
+        if self.steps > self.lr_decay_steps:
+            return
 
-        self.optimiser.zero_grad()
-        loss = self.qmix.loss(current_q_totals, targets)
-        loss.backward()
-        if settings.QMIX_GRADIENT_CLIP:
-            torch.nn.utils.clip_grad_norm_(self.eval_parameters, 10)
-        self.optimiser.step()
-
-        if settings.QMIX_SOFT_UPDATE:
-            self.qmix.update_target_networks(tau=settings.QMIX_SOFT_UPDATE_TAU)
-        elif self.steps % settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY == 0:
-            self.qmix.update_target_networks()
-
-    def _learn_shared_agents(self):
-        local_states, global_states, actions, rewards, next_local_states, next_global_states, dones = \
-            self.replay_buffer.sample_experience(batch_size=self.batch_size)
-
-        current_q_values = self.qmix.online_agent_networks(local_states).unsqueeze(1)
-
-        # Get q-values based on the actions sampled
-        current_single_q_values = current_q_values[torch.arange(self.batch_size), :, actions]
-        # Get the current_q_totals
-        if settings.AGENT_TYPE.lower() == "qmix":
-            current_q_totals = self.qmix.online_mixer_network(current_single_q_values, global_states)
-            # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
-            current_q_totals = current_q_totals.squeeze(1).squeeze(1)
-        else:
-            current_q_totals = self.qmix.online_mixer_network(current_single_q_values)
-            current_q_totals = current_q_totals.squeeze(1)
-
-        # Get target q_values based on the max action from the online_agent networks, for the next local states
-        with torch.no_grad():
-            target_q_values = self.qmix.target_agent_networks(next_local_states).unsqueeze(1)
-
-            actions_for_next_state_max_q_values = self.qmix.online_agent_networks(next_local_states).max(dim=1)[1]
-
-            target_single_q_values = target_q_values[torch.arange(self.batch_size), :,
-                                     actions_for_next_state_max_q_values]
-
-        # Now take the q values that match the online networks best action in the next_local_state
-        # Pass all of these into the target_mixer_network to get the target_q_totals
-        if settings.AGENT_TYPE.lower() == "qmix":
-            target_q_totals = self.qmix.target_mixer_network(target_single_q_values, next_global_states)
-            # Change target_q_totals shape: (self.batch_size, 1, 1) -> (self.batch_size)
-            target_q_totals = target_q_totals.squeeze(1).squeeze(1)
-        else:
-            target_q_totals = self.qmix.target_mixer_network(target_single_q_values)
-            target_q_totals = target_q_totals.squeeze(1)
-
-        targets = rewards + (self.gamma * (1 - dones) * target_q_totals)
-
-        self.optimiser.zero_grad()
-        loss = self.qmix.loss(current_q_totals, targets)
-        loss.backward()
-        if settings.QMIX_GRADIENT_CLIP:
-            torch.nn.utils.clip_grad_norm_(self.eval_parameters, 10)
-        self.optimiser.step()
-
-        if settings.QMIX_SOFT_UPDATE:
-            self.qmix.update_target_networks(tau=settings.QMIX_SOFT_UPDATE_TAU)
-        elif self.steps % settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY == 0:
-            self.qmix.update_target_networks()
+        new_lr = self.lr_starting_value * (self.lr_decay_factor ** (self.steps / self.lr_decay_steps))
+        for p in self.optimiser.param_groups:
+            p["lr"] = new_lr
 
     def get_agent_specific_config(self):
         if settings.AGENT_TYPE.lower() == "vdn":
