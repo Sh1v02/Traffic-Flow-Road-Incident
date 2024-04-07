@@ -86,7 +86,7 @@ class MAPPOAgentRunner(AgentRunner):
             actions = tuple(
                 self.agent.get_action(local_states[i], training=False) for i in range(multi_agent_settings.AGENT_COUNT)
             )
-            next_local_states, team_rewards, done, trunc, infos = self.test_env.step(actions)
+            local_states, team_rewards, done, trunc, infos = self.test_env.step(actions)
 
             # If for testing, we want to wait for all agents to be done before ending the episode, then update done
             if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[1]:
