@@ -147,6 +147,7 @@ class MAPPOAgent(PPOAgent):
         return {
             "MAPPO_NETWORK_DIMS": str(self.hidden_layer_dims),
             "MAPPO_DISCOUNT_FACTOR/GAMMA": str(settings.MAPPO_DISCOUNT_FACTOR),
+            "MAPPO_CRITIC_LOSS_FUNCTION": str(settings.MAPPO_CRITIC_LOSS_FUNCTION),
             "MAPPO_LR": str(settings.MAPPO_LR),
             "MAPPO_BATCH_SIZE": str(settings.MAPPO_BATCH_SIZE),
             "MAPPO_UPDATE_EPOCHS": str(settings.MAPPO_UPDATE_EPOCHS),

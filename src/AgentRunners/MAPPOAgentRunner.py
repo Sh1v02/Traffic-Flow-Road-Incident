@@ -12,6 +12,8 @@ from src.Utilities.Helper import Helper
 class MAPPOAgentRunner(AgentRunner):
     def __init__(self, env, test_env, local_state_dims, global_state_dims, action_dims, optimiser=torch.optim.Adam,
                  loss=torch.nn.MSELoss()):
+        if settings.MAPPO_CRITIC_LOSS_FUNCTION.lower() == "huber":
+            loss = torch.nn.HuberLoss()
         self.agent = MAPPOAgent(optimiser, loss, local_state_dims, global_state_dims, action_dims)
         self.global_state_dims = global_state_dims
         super().__init__(env, test_env, self.agent)
