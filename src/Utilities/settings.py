@@ -11,7 +11,7 @@ ENVIRONMENT_SEED = 4
 SEED = 4
 RANDOM_SEED = False
 
-AGENT_TYPE = "qmix"
+AGENT_TYPE = "mappo"
 
 PLOT_STEPS_FREQUENCY = 25  # Might be overridden when configuring, check PPO_PLOT_STEPS_PER_UPDATE
 TRAINING_STEPS = 300_000
@@ -68,6 +68,23 @@ QMIX_MIN_EPSILON = 0.05
 QMIX_REPLAY_BUFFER_SIZE = 10000
 QMIX_GRADIENT_CLIP = False
 
+
+# -------------------------- MAPPO Settings ---------------------------
+MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "EP"  # Environment Provided
+MAPPO_NETWORK_DIMS = [256, 256, 256, 256]
+MAPPO_LR = [3e-4, 3e-3]
+MAPPO_DISCOUNT_FACTOR = 0.9
+MAPPO_GAE_LAMBDA = 0.95
+MAPPO_EPSILON = 0.2
+MAPPO_CRITIC_COEFFICIENT = 1
+MAPPO_ENTROPY_COEFFICIENT = 0.2
+MAPPO_ENTROPY_COEFFICIENT_DECAY = 0.999
+MAPPO_ENTROPY_COEFFICIENT_MIN = 0.001
+MAPPO_BATCH_SIZE = 5
+MAPPO_UPDATE_FREQUENCY = 20
+MAPPO_PLOT_STEPS_PER_UPDATE = True
+
+
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
 
 GOOGLE_DRIVE_DIR = "/content/drive/My Drive/Dissertation/Results"
@@ -93,6 +110,8 @@ def configure_settings():
         PLOT_STEPS_FREQUENCY = PPO_UPDATE_FREQUENCY
     elif (AGENT_TYPE.lower() == "qmix" or AGENT_TYPE.lower() == "vdn") and QMIX_PLOT_STEPS_PER_UPDATE:
         PLOT_STEPS_FREQUENCY = QMIX_HARD_UPDATE_NETWORKS_FREQUENCY
+    elif AGENT_TYPE.lower() == "mappo" and MAPPO_PLOT_STEPS_PER_UPDATE:
+        PLOT_STEPS_FREQUENCY = MAPPO_UPDATE_FREQUENCY
 
     torch.manual_seed(SEED)
     torch.cuda.manual_seed(SEED)

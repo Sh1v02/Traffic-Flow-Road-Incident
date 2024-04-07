@@ -5,3 +5,4 @@ from src.Models.PPO.PPOActorNetwork import PPOActorNetwork
 from src.Models.PPO.PPOCriticNetwork import PPOCriticNetwork
 from src.Models.QMIX.QMIXAgentNetwork import QMIXAgentNetwork
 from src.Models.QMIX.QMIXMixerNetwork import QMIXMixerNetwork
+from src.Models.MAPPO.MAPPOCriticNetwork import MAPPOCriticNetwork

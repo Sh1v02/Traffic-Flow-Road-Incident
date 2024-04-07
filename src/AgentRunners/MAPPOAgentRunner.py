@@ -4,16 +4,15 @@ import numpy as np
 import torch
 
 from src.AgentRunners import AgentRunner
-from src.Agents.QMIXAgent import QMIXAgent
-from src.Utilities import settings, multi_agent_settings
+from src.Agents.MAPPOAgent import MAPPOAgent
+from src.Utilities import multi_agent_settings, settings
 from src.Utilities.Helper import Helper
 
 
-class QMIXAgentRunner(AgentRunner):
-    def __init__(self, env, test_env, local_state_dims, global_state_dims, action_dims):
-        self.agent = QMIXAgent(torch.optim.Adam, local_state_dims, global_state_dims, action_dims,
-                               optimiser_args={"lr": settings.QMIX_LR[0]})
-
+class MAPPOAgentRunner(AgentRunner):
+    def __init__(self, env, test_env, local_state_dims, global_state_dims, action_dims, optimiser=torch.optim.Adam,
+                 loss=torch.nn.MSELoss()):
+        self.agent = MAPPOAgent(optimiser, loss, local_state_dims, global_state_dims, action_dims)
         super().__init__(env, test_env, self.agent)
 
         Helper.output_information("Multi Agent: " + str(multi_agent_settings.AGENT_COUNT))
@@ -28,6 +27,7 @@ class QMIXAgentRunner(AgentRunner):
                                           ['Team Returns', 'Average Speed'])
 
         Helper.output_information("\n\nBeginning Training")
+
         while self.steps < self.max_steps:
             done = False
             local_states, infos = self.env.reset()
@@ -37,7 +37,13 @@ class QMIXAgentRunner(AgentRunner):
 
             starting_episode_steps = self.steps
             while not done:
-                actions = self.agent.get_action(local_states)
+                actions, values, probabilities = (), [], []
+                for i in range(multi_agent_settings.AGENT_COUNT):
+                    action, value, prob = self.agent.get_action(local_states[i], global_state)
+                    actions += (action,)
+                    values.append(value)
+                    probabilities.append(prob)
+
                 next_local_states, team_reward, done, trunc, infos = self.env.step(actions)
                 next_global_state = self.env.get_global_state()
 
@@ -47,16 +53,17 @@ class QMIXAgentRunner(AgentRunner):
                 if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
                     done = all(dones)
 
-                self.agent.store_experience_in_replay_buffer(
-                    local_states, global_state, actions, rewards, next_local_states, next_global_state, dones
-                )
+                # If using team spirit, update the rewards to use the team spirit calculation
+                if multi_agent_settings.TEAM_SPIRIT[0]:
+                    rewards = self.calculate_team_spirit_rewards(rewards, team_reward)
+
+                self.agent.store_experience_in_replay_buffer(local_states, actions, values, rewards, dones,
+                                                             probabilities, global_state)
 
                 local_states = next_local_states
                 global_state = next_global_state
                 episode_reward += team_reward
-                if not settings.QMIX_LEARN_PER_EPISODE:
-                    self.agent.learn()
-
+                self.agent.learn()
                 self.steps += 1
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
                     optimal_policy_reward, optimal_policy_speed = self.test()
@@ -64,10 +71,6 @@ class QMIXAgentRunner(AgentRunner):
                                                       ['Team Returns', 'Average Speed'])
 
             self.episode += 1
-            if settings.QMIX_LEARN_PER_EPISODE:
-                self.agent.learn(self.steps)
-
-            # Output episode results
             self.output_episode_results(episode_reward, self.steps - starting_episode_steps)
 
     def test(self):
@@ -80,14 +83,16 @@ class QMIXAgentRunner(AgentRunner):
         Helper.output_information("-------------")
         Helper.output_information("Testing Optimal Policy: " + str(self.steps / settings.PLOT_STEPS_FREQUENCY))
         while not done:
-            actions = self.agent.get_action(local_states, training=False)
-            local_states, team_reward, done, trunc, infos = self.test_env.step(actions)
+            actions = tuple(
+                self.agent.get_action(local_states[i], training=False) for i in range(multi_agent_settings.AGENT_COUNT)
+            )
+            next_local_states, team_rewards, done, trunc, infos = self.test_env.step(actions)
 
             # If for testing, we want to wait for all agents to be done before ending the episode, then update done
             if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[1]:
                 done = all(infos["dones"])
 
-            episode_reward += team_reward
+            episode_reward += team_rewards
             avg_agents_speed = np.append(avg_agents_speed, sum(infos["agents_speeds"]) / len(infos["agents_speeds"]))
             episode_steps += 1
 
