@@ -70,7 +70,7 @@ QMIX_GRADIENT_CLIP = False
 
 
 # -------------------------- MAPPO Settings ---------------------------
-MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "AS"  # Environment Provided    Agent Specific
+MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "EP"  # Environment Provided    Agent Specific
 MAPPO_NETWORK_DIMS = [256, 256, 256, 256]
 MAPPO_LR = [3e-4, 3e-3]
 MAPPO_DISCOUNT_FACTOR = 0.9
