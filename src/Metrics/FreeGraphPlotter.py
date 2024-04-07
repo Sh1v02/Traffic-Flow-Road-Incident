@@ -14,7 +14,8 @@ class FreeGraphPlotter:
         max_rewards = np.max(values, axis=0)
 
         plot_axis.plot(steps * 15, mean_rewards, label=label, linewidth=1.0, color=colour)
-        plot_axis.fill_between(steps * 15, min_rewards, max_rewards, color=colour, alpha=0.05)
+        plot_axis.fill_between(steps * 15, min_rewards, max_rewards, color=colour, alpha=0.1)
+        plot_axis.grid(True)
 
     # Given a directory containing n number of runs (rewards.txt) of the same type, plot the average and min/max range
     @staticmethod
@@ -30,7 +31,7 @@ class FreeGraphPlotter:
         for item in os.listdir(directory):
             file_path = os.path.join(directory, item)
             if os.path.isfile(file_path):
-                if "rewards" not in item:
+                if "rewards" not in item and "returns" not in item:
                     continue
                 steps, optimal_policy_rewards, optimal_policy_speeds = np.loadtxt(file_path, delimiter=',')
 
@@ -56,7 +57,7 @@ class FreeGraphPlotter:
         # plots[key][0] = [plt_fig, plt_axis] --> eg: plots[key][0][0] = plt_fig
         # plots[key][1] = the values (rewards, speeds, etc)
         plots = {
-            "Rolling Average Reward": [plt.subplots(), stacked_rewards],
+            "Rolling Average Return": [plt.subplots(), stacked_rewards],
             "Rolling Average Speed": [plt.subplots(), stacked_speeds]
         }
 
@@ -107,10 +108,14 @@ class FreeGraphPlotter:
         save_dir = parent_directory + "/AveragesResults/"
         os.makedirs(save_dir, exist_ok=True)
 
+        rewards_axis.set_xlabel('Frames')
+        rewards_axis.set_ylabel('Rolling Average Return')
         rewards_axis.legend(fontsize='8')
         rewards_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
-        rewards_fig.savefig(save_dir + "Rewards Rolling Average (window_size=" + str(r_avg_window_size) + ")")
+        rewards_fig.savefig(save_dir + "Returns Rolling Average (window_size=" + str(r_avg_window_size) + ")")
 
+        speeds_axis.set_xlabel('Frames')
+        speeds_axis.set_ylabel('Rolling Average Speed')
         speeds_axis.legend(fontsize='8')
         speeds_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
         speeds_fig.savefig(save_dir + "Speeds Rolling Average (window_size=" + str(r_avg_window_size) + ")")
@@ -123,7 +128,7 @@ class FreeGraphPlotter:
         for item in os.listdir(directory):
             file_path = os.path.join(directory, item)
             if os.path.isfile(file_path):
-                if "rewards" not in item:
+                if "rewards" not in item and "returns" not in item:
                     continue
                 steps, optimal_policy_rewards, optimal_policy_speeds = np.loadtxt(file_path, delimiter=',')
 
@@ -142,7 +147,7 @@ class FreeGraphPlotter:
         os.makedirs(save_dir, exist_ok=True)
 
         rolling_avg_rewards_axis.set_xlabel('Frames')
-        rolling_avg_rewards_axis.set_ylabel('Rolling Average Reward')
+        rolling_avg_rewards_axis.set_ylabel('Rolling Average Return')
         rolling_avg_rewards_axis.set_title(
             "\n(Individual Rolling Averages with window size = " + str(r_avg_window_size) + ")")
 
@@ -151,7 +156,7 @@ class FreeGraphPlotter:
         rolling_avg_rewards_fig.savefig(save_dir + "/individual_rolling_averages_" + str(r_avg_window_size))
 
     @staticmethod
-    def download_txt_files(directory_to_search, save_directory, file_to_search_for="rewards.txt"):
+    def download_txt_files(directory_to_search, save_directory, file_to_search_for="returns.txt"):
         download_count = 0
 
         if not os.path.exists(save_directory):
@@ -159,9 +164,9 @@ class FreeGraphPlotter:
 
         for root, _, files in os.walk(directory_to_search):
             for file in files:
-                if file == file_to_search_for:
+                if file == file_to_search_for or file == "rewards.txt":
                     file_path = os.path.join(root, file)
-                    FreeGraphPlotter.download_file(file_path, "rewards_" + str(download_count) + ".txt", save_directory)
+                    FreeGraphPlotter.download_file(file_path, "returns_" + str(download_count) + ".txt", save_directory)
                     download_count += 1
                 elif file == "config.txt":
                     file_path = os.path.join(root, file)
@@ -182,17 +187,17 @@ class FreeGraphPlotter:
             print("Error downloading ", file_path, "\n", e)
 
 
+# TODO: Label the axis on the plots
 if __name__ == '__main__':
     plots_dir = ""
 
     download_from = plots_dir + "4 Agents 9 Obstructions/Standard"
     download_to = plots_dir + "4 Agents 9 Obstructions/Standard"
 
-    FreeGraphPlotter.download_txt_files(download_from, download_to)
-
+    # FreeGraphPlotter.download_txt_files(download_from, download_to)
+    #
     average_dir = plots_dir + "4 Agents 9 Obstructions"
     FreeGraphPlotter.plot_multiple_average_graphs(average_dir)
 
-    # FreeGraphPlotter.plot_multiple_individual_graphs("TestDownloads")
+    # FreeGraphPlotter.plot_multiple_individual_graphs("", r_avg_window_size=1500)
     # FreeGraphPlotter.plot_average("TestDownloads")
-

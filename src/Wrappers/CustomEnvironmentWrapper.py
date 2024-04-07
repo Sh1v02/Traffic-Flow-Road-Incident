@@ -28,14 +28,19 @@ class CustomEnvironmentWrapper(gym.Wrapper):
         return self._transform_state(states), infos
 
     def get_global_state(self):
-        return self.env.get_global_state().flatten()
+        global_state = self.env.get_global_state().flatten()
+
+        if self.agent_type == "ddqn" or self.agent_type == "qmix" or self.agent_type == 'vdn':
+            global_state = tensor(global_state)
+
+        return global_state
 
     def _transform_state(self, states):
         # All networks take in a flattened state
         states = [state.flatten() for state in states] if self.is_multi_agent else states.flatten()
 
         # Custom processing to the state based on the type of agent (which have different networks)
-        if self.agent_type == 'ddqn':
+        if self.agent_type == 'ddqn' or self.agent_type == 'qmix' or self.agent_type == 'vdn':
             states = [tensor(state) for state in states] if self.is_multi_agent else tensor(states)
 
         return states

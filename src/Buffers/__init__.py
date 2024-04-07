@@ -1,3 +1,3 @@
 from src.Buffers.PPOReplayBuffer import PPOReplayBuffer
-from src.Buffers.PPOSharedReplayBuffer import PPOSharedReplayBuffer
+from src.Buffers.SharedPPOReplayBuffer import SharedPPOReplayBuffer
 from src.Buffers.UniformExperienceReplayBuffer import UniformExperienceReplayBuffer

@@ -15,8 +15,8 @@ class ResultsPlotter:
         self.reward_history = np.empty(0)
         self.speed_history = np.empty(0)
 
-    def save_final_results(self, episode_reached):
-        self.plot_graph(self.steps_history, self.reward_history, "rewards", save_dir=settings.SAVE_DIR)
+    def save_final_results(self):
+        self.plot_graph(self.steps_history, self.reward_history, "returns", save_dir=settings.SAVE_DIR)
         self.plot_graph(self.steps_history, self.speed_history, "speed_history", save_dir=settings.SAVE_DIR,
                         labels=['Steps', 'Speed'])
         r_avg_windows = [100, 500]
@@ -32,7 +32,7 @@ class ResultsPlotter:
                                 labels=['Steps', 'Speed'])
 
         # Save values to text file: rewards.txt
-        np.savetxt(settings.SAVE_DIR + "/rewards.txt",
+        np.savetxt(settings.SAVE_DIR + "/returns.txt",
                    (self.steps_history, self.reward_history, self.speed_history), delimiter=',', fmt='%d')
 
     def get_config_dict(self):
@@ -78,7 +78,7 @@ class ResultsPlotter:
 
     @staticmethod
     def plot_graph(x_values, y_values, name, save_dir=None, labels=None):
-        labels = labels if labels else ["Frames", "Reward"]
+        labels = labels if labels else ["Frames", "Return"]
         frames_per_step = 15
         plt.figure(figsize=(8, 4))
         # plt.plot(x_values, y_values, marker='o', linestyle='-', color='b')

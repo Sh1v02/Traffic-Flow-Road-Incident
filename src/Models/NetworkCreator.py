@@ -15,7 +15,8 @@ class NetworkCreator(nn.Module):
 
         self.loss = loss
         optimiser_args = optimiser_args if optimiser_args else {}
-        self.optimiser = optimiser(self.parameters(), **optimiser_args)
+        if optimiser:
+            self.optimiser = optimiser(self.parameters(), **optimiser_args)
 
         # Initialise activations
         self.tanh = nn.Tanh()

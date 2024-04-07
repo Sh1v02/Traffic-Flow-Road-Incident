@@ -1,6 +1,7 @@
 import warnings
 
 from src.AgentRunners import MultiAgentRunner
+from src.AgentRunners.QMIXAgentRunner import QMIXAgentRunner
 from src.Agents import AgentFactory
 from src.Utilities import settings, multi_agent_settings
 from src.Utilities.Helper import Helper
@@ -20,10 +21,10 @@ multi_agent_config = {
             "normalize": False,
             "features": ["presence", "x", "y", "vx", "vy", "cos_h", "sin_h"],
             "features_range": {
-                "x": [-100, 100],
+                "x": [-2000, 2000],
                 "y": [-100, 100],
-                "vx": [-20, 20],
-                "vy": [-20, 20]
+                "vx": [-30, 30],
+                "vy": [-30, 30]
             },
             # TODO: Try with False! (MAYBE CHANGE NORMALIZE TOO)
             "absolute": True,
@@ -45,14 +46,26 @@ def run_multi_agent():
 
     env, test_env = Helper.create_environments(multi_agent_config)
 
+    state_dims, action_dims = Helper.get_env_dims(env)
+
+    if settings.AGENT_TYPE.lower() == "qmix" or settings.AGENT_TYPE.lower() == "vdn":
+        multi_agent_runner = QMIXAgentRunner(env, test_env, state_dims, len(env.get_global_state()), action_dims)
+        multi_agent_runner.train()
+        multi_agent_runner.save_final_results()
+        multi_agent_runner.test()
+        return
+
     replay_buffer = networks = None
     if multi_agent_settings.SHARED_REPLAY_BUFFER:
-        replay_buffer = AgentFactory.create_shared_replay_buffer()
+        replay_buffer = AgentFactory.create_shared_replay_buffer(state_dims, action_dims)
 
     if multi_agent_settings.PARAMETER_SHARING[0].lower() == "full":
-        networks = AgentFactory.create_fully_shared_networks(env)
+        networks = AgentFactory.create_fully_shared_networks(state_dims, action_dims)
 
-    agents = [AgentFactory.create_new_agent(env, replay_buffer, networks) for _ in range(multi_agent_settings.AGENT_COUNT)]
+    agents = [
+        AgentFactory.create_new_agent(state_dims, action_dims, env, replay_buffer, networks)
+        for _ in range(multi_agent_settings.AGENT_COUNT)
+    ]
 
     multi_agent_runner = MultiAgentRunner(env, test_env, agents)
     multi_agent_runner.train()

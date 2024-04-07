@@ -11,7 +11,8 @@ from src.Utilities import settings
 
 # TODO: Add shared replay buffer compatibility (see PPOAgent and AgentFactory)
 class DDQNAgent(Agent):
-    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss()):
+    def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss(),
+                 replay_buffer=None):
         self.action_dims = action_dims
         self.gamma = settings.DDQN_DISCOUNT_FACTOR
         self.epsilon = settings.DDQN_EPSILON
@@ -19,7 +20,9 @@ class DDQNAgent(Agent):
         self.min_epsilon = settings.DDQN_MIN_EPSILON
         self.batch_size = settings.DDQN_BATCH_SIZE
         self.update_target_network_frequency = settings.DDQN_UPDATE_TARGET_NETWORK_FREQUENCY
-        self.replay_buffer = UniformExperienceReplayBuffer(state_dims, 1, 10000, actions_type=torch.int32)
+        self.replay_buffer = UniformExperienceReplayBuffer(state_dims, actions_type=torch.int32,
+                                                           max_size=settings.DDQN_REPLAY_BUFFER_SIZE) \
+            if not replay_buffer else replay_buffer
 
         self.online_network = MultiLayerPerceptron(optimiser, loss, state_dims, action_dims,
                                                    optimiser_args={"lr": settings.DDQN_LR},
@@ -68,5 +71,6 @@ class DDQNAgent(Agent):
             "DDQN_EPSILON_DECAY": str(settings.DDQN_EPSILON_DECAY),
             "DDQN_MIN_EPSILON": str(settings.DDQN_MIN_EPSILON),
             "DDQN_BATCH_SIZE": str(settings.DDQN_BATCH_SIZE),
+            "DDQN_REPLAY_BUFFER_SIZE": str(settings.DDQN_REPLAY_BUFFER_SIZE),
             "DDQN_UPDATE_TARGET_NETWORK_FREQUENCY": str(settings.DDQN_UPDATE_TARGET_NETWORK_FREQUENCY)
         }
