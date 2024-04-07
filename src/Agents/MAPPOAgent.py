@@ -11,10 +11,10 @@ from src.Wrappers.GPUSupport import tensor
 # Uses full parameter sharing for the actors and critics.
 # Each agent has its own actor, and there is a shared critic between all agents, that takes in the
 class MAPPOAgent(PPOAgent):
-    def __init__(self, optimiser, loss, local_state_dims, global_state_dims, action_dims, num_epochs=10):
+    def __init__(self, optimiser, loss, local_state_dims, global_state_dims, action_dims):
         self.value_function_input_type = settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION.lower()
         self.loss = loss
-        self.num_epochs = num_epochs
+        self.num_epochs = settings.MAPPO_UPDATE_EPOCHS
         self.batch_size = settings.MAPPO_BATCH_SIZE
         self.update_frequency = settings.MAPPO_UPDATE_FREQUENCY
         self.gamma = settings.MAPPO_DISCOUNT_FACTOR
@@ -149,6 +149,7 @@ class MAPPOAgent(PPOAgent):
             "MAPPO_DISCOUNT_FACTOR/GAMMA": str(settings.MAPPO_DISCOUNT_FACTOR),
             "MAPPO_LR": str(settings.MAPPO_LR),
             "MAPPO_BATCH_SIZE": str(settings.MAPPO_BATCH_SIZE),
+            "MAPPO_UPDATE_EPOCHS": str(settings.MAPPO_UPDATE_EPOCHS),
             "MAPPO_UPDATE_FREQUENCY": str(settings.MAPPO_UPDATE_FREQUENCY),
             "MAPPO_GAE_LAMBDA": str(settings.MAPPO_GAE_LAMBDA),
             "MAPPO_EPSILON": str(settings.MAPPO_EPSILON),
