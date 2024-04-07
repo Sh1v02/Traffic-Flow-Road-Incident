@@ -49,8 +49,8 @@ class MAPPOAgent(PPOAgent):
 
         # If we aren't using a shared replay buffer, add to each agent's respective buffer
         for agent_index in range(multi_agent_settings.AGENT_COUNT):
-            # Add each agent's experience to its respective buffer, but all agents have the same global state
-            self.replay_buffer[agent_index].add_experience(*[arg[agent_index] for arg in args[:-1]], args[-1])
+            # Add each agent's experience to its respective buffer
+            self.replay_buffer[agent_index].add_experience(*[arg[agent_index] for arg in args])
 
     def learn(self):
         self.steps += 1

@@ -13,6 +13,7 @@ class MAPPOAgentRunner(AgentRunner):
     def __init__(self, env, test_env, local_state_dims, global_state_dims, action_dims, optimiser=torch.optim.Adam,
                  loss=torch.nn.MSELoss()):
         self.agent = MAPPOAgent(optimiser, loss, local_state_dims, global_state_dims, action_dims)
+        self.global_state_dims = global_state_dims
         super().__init__(env, test_env, self.agent)
 
         Helper.output_information("Multi Agent: " + str(multi_agent_settings.AGENT_COUNT))
@@ -33,19 +34,20 @@ class MAPPOAgentRunner(AgentRunner):
             local_states, infos = self.env.reset()
             global_state = self.env.get_global_state()
 
+            global_states = [global_state for _ in range(multi_agent_settings.AGENT_COUNT)]
+
             episode_reward = 0
 
             starting_episode_steps = self.steps
             while not done:
                 actions, values, probabilities = (), [], []
                 for i in range(multi_agent_settings.AGENT_COUNT):
-                    action, value, prob = self.agent.get_action(local_states[i], global_state)
+                    action, value, prob = self.agent.get_action(local_states[i], global_states[i])
                     actions += (action,)
                     values.append(value)
                     probabilities.append(prob)
 
                 next_local_states, team_reward, done, trunc, infos = self.env.step(actions)
-                next_global_state = self.env.get_global_state()
 
                 rewards, dones = infos["agents_rewards"], infos["agents_dones"]
 
@@ -58,10 +60,19 @@ class MAPPOAgentRunner(AgentRunner):
                     rewards = self.calculate_team_spirit_rewards(rewards, team_reward)
 
                 self.agent.store_experience_in_replay_buffer(local_states, actions, values, rewards, dones,
-                                                             probabilities, global_state)
+                                                             probabilities, global_states)
 
                 local_states = next_local_states
-                global_state = next_global_state
+                global_state = self.env.get_global_state()
+
+                # Update the global_states
+                for agent_index in range(len(dones)):
+                    # If value function death masking (set the global state to 0 here)
+                    if multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING and dones[agent_index]:
+                        global_states[agent_index] = np.zeros(self.global_state_dims)
+                    else:
+                        global_states[agent_index] = global_state
+
                 episode_reward += team_reward
                 self.agent.learn()
                 self.steps += 1

@@ -19,9 +19,9 @@ class SharedPPOReplayBuffer(ReplayBuffer):
             self.global_states = [[] for _ in range(multi_agent_settings.AGENT_COUNT)]
 
     def add_experience(self, *args):
-        global_state = None
+        global_states = None
         if self.global_states_buffer_required:
-            states, actions, values, rewards, dones, probabilities, global_state = args
+            states, actions, values, rewards, dones, probabilities, global_states = args
         else:
             states, actions, values, rewards, dones, probabilities = args
 
@@ -33,7 +33,7 @@ class SharedPPOReplayBuffer(ReplayBuffer):
             self.dones[agent_index].append(dones[agent_index])
             self.probabilities[agent_index].append(probabilities[agent_index])
             if self.global_states_buffer_required:
-                self.global_states[agent_index].append(global_state)
+                self.global_states[agent_index].append(global_states[agent_index])
 
     def clear(self):
         self.local_states = [[] for _ in range(multi_agent_settings.AGENT_COUNT)]
