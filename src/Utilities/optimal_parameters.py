@@ -56,7 +56,7 @@ def use_optimal_parameters():
     settings.MAPPO_NETWORK_DIMS = [256, 256, 256, 256]
     settings.MAPPO_CRITIC_LOSS_FUNCTION = "MSE"
     settings.MAPPO_LR = [3e-4, 3e-3]
-    settings.MAPPO_DISCOUNT_FACTOR = 0.99
+    settings.MAPPO_DISCOUNT_FACTOR = 0.85
     settings.MAPPO_GAE_LAMBDA = 0.95
     settings.MAPPO_EPSILON = 0.2
     settings.MAPPO_CRITIC_COEFFICIENT = 1
