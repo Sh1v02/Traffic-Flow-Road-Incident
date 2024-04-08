@@ -5,6 +5,7 @@ from random import seed
 import torch
 from numpy.random import seed as np_seed
 
+from src.Utilities import optimal_parameters
 from src.Utilities.Helper import Helper
 
 ENVIRONMENT_SEED = 4
@@ -12,6 +13,7 @@ SEED = 4
 RANDOM_SEED = False
 
 AGENT_TYPE = "mappo"
+USE_OPTIMAL_PARAMETERS = False
 
 PLOT_STEPS_FREQUENCY = 25  # Might be overridden when configuring, check PPO_PLOT_STEPS_PER_UPDATE
 TRAINING_STEPS = 300_000
@@ -102,8 +104,7 @@ def configure_settings():
     # This has to remain constant to ensure that the environment itself, such as road and car positions, doesn't change
     np_seed(ENVIRONMENT_SEED)
 
-    global SEED
-    global PLOT_STEPS_FREQUENCY
+    global SEED, PLOT_STEPS_FREQUENCY, USE_OPTIMAL_PARAMETERS
 
     if RANDOM_SEED:
         SEED = random.randint(0, 100)
@@ -123,3 +124,7 @@ def configure_settings():
     if torch.cuda.is_available():
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+
+    if USE_OPTIMAL_PARAMETERS:
+        Helper.output_information("Using optimal parameters")
+        optimal_parameters.use_optimal_parameters()
