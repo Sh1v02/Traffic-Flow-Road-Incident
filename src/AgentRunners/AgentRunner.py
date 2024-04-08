@@ -37,25 +37,25 @@ class AgentRunner(ABC):
     def output_episode_results(self, episode_reward, episode_steps):
         self.output_remaining_time(100)
         # Output episode rewards and overall status
-        print("Episode: ", self.episode)
+        print("Episode: ", self.episode, " - Total Steps: ", self.steps, "/", self.max_steps)
         print("  - Reward: ", episode_reward)
-        print("  - Total Steps: ", self.steps, "/", self.max_steps)
         print("  - Episode Steps: ", episode_steps)
-        # print("  - Optimal Policy Rewards > 70: ", np.sum(self.rp.reward_history >= 70))
-        # print("  - Optimal Policy Rewards > 80: ", np.sum(self.rp.reward_history >= 80))
         print("  - Max Optimal Policy Reward: ", np.max(self.rp.reward_history))
+        print("  - Trunc Count: ", self.rp.trunc_count)
         if len(self.rp.reward_history) >= 100:
             print("  - Rolling Average (100 optimal policy tests): ", np.mean(self.rp.reward_history[-100:]))
         if len(self.rp.reward_history) >= 500:
             print("  - Rolling Average (500 optimal policy tests): ", np.mean(self.rp.reward_history[-500:]))
 
-    def store_optimal_policy_results(self, optimal_policy_reward, optimal_policy_speed, plot_names=None):
+    def store_optimal_policy_results(self, optimal_policy_reward, optimal_policy_speed, trunc, plot_names=None):
         plot_names = plot_names if plot_names else ['Returns', 'Speed']
         r_avgs = [100, 500]
 
         self.rp.steps_history = np.append(self.rp.steps_history, self.steps)
         self.rp.reward_history = np.append(self.rp.reward_history, optimal_policy_reward)
         self.rp.speed_history = np.append(self.rp.speed_history, optimal_policy_speed)
+        self.rp.trunc_count += int(trunc)
+        self.rp.trunc_history = np.append(self.rp.trunc_history, self.rp.trunc_count)
 
         if settings.LOG_TENSORBOARD:
             with self.summary_writer.as_default():

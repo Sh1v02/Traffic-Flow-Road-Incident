@@ -23,9 +23,9 @@ class QMIXAgentRunner(AgentRunner):
         self.start_time = time.time()
 
         # Evaluate for the first time:
-        optimal_policy_reward, optimal_policy_speed = self.test()
-        self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
-                                          ['Team Returns', 'Average Speed'])
+        optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc = self.test()
+        self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc,
+                                          ['Team Returns', 'Average Speed', 'End Reached'])
 
         Helper.output_information("\n\nBeginning Training")
         while self.steps < self.max_steps:
@@ -59,9 +59,9 @@ class QMIXAgentRunner(AgentRunner):
 
                 self.steps += 1
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
-                    optimal_policy_reward, optimal_policy_speed = self.test()
-                    self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
-                                                      ['Team Returns', 'Average Speed'])
+                    optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc = self.test()
+                    self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc,
+                                                      ['Team Returns', 'Average Speed', 'End Reached'])
 
             self.episode += 1
             if settings.QMIX_LEARN_PER_EPISODE:
@@ -71,7 +71,7 @@ class QMIXAgentRunner(AgentRunner):
             self.output_episode_results(episode_reward, self.steps - starting_episode_steps)
 
     def test(self):
-        done = False
+        done = trunc = False
         local_states, infos = self.test_env.reset()
 
         episode_steps = 0
@@ -97,4 +97,4 @@ class QMIXAgentRunner(AgentRunner):
         Helper.output_information(" - Agent Speed: " + str(avg_speed))
         Helper.output_information("-------------\n")
 
-        return episode_reward, avg_speed
+        return episode_reward, avg_speed, trunc

@@ -14,11 +14,15 @@ class ResultsPlotter:
         self.steps_history = np.empty(0)
         self.reward_history = np.empty(0)
         self.speed_history = np.empty(0)
+        self.trunc_history = np.empty(0)
+        self.trunc_count = 0
 
     def save_final_results(self):
         self.plot_graph(self.steps_history, self.reward_history, "returns", save_dir=settings.SAVE_DIR)
         self.plot_graph(self.steps_history, self.speed_history, "speed_history", save_dir=settings.SAVE_DIR,
-                        labels=['Steps', 'Speed'])
+                        labels=['Frames', 'Speed'])
+        self.plot_graph(self.steps_history, self.trunc_history, "end_reached_history", save_dir=settings.SAVE_DIR,
+                        labels=['Frames', 'End Reached'])
         r_avg_windows = [100, 500]
         for r_avg_window in r_avg_windows:
             if len(self.reward_history) >= r_avg_window:
@@ -33,7 +37,8 @@ class ResultsPlotter:
 
         # Save values to text file: rewards.txt
         np.savetxt(settings.SAVE_DIR + "/returns.txt",
-                   (self.steps_history, self.reward_history, self.speed_history), delimiter=',', fmt='%d')
+                   (self.steps_history, self.reward_history, self.speed_history, self.trunc_history),
+                   delimiter=',', fmt='%d')
 
     def get_config_dict(self):
         config = {
@@ -47,6 +52,8 @@ class ResultsPlotter:
                     "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
                     "OBSTRUCTION_COUNT": graphics_settings.OBSTRUCTION_COUNT,
                     "WAIT_UNTIL_TERMINATED": str(multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
+                    "DEATH_HANDLING": str(multi_agent_settings.DEATH_HANDLING),
+                    "VALUE_FUNCTION_DEATH_MASKING": str(multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING),
                     "TEAM_SPIRIT": str(multi_agent_settings.TEAM_SPIRIT),
                     "SHARED_REPLAY_BUFFER": str(multi_agent_settings.SHARED_REPLAY_BUFFER),
                     "PARAMETER_SHARING": str(multi_agent_settings.PARAMETER_SHARING)
@@ -82,7 +89,7 @@ class ResultsPlotter:
         frames_per_step = 15
         plt.figure(figsize=(8, 4))
         # plt.plot(x_values, y_values, marker='o', linestyle='-', color='b')
-        plt.plot(x_values * 15, y_values, linestyle='-', color='b', linewidth=1.0)
+        plt.plot(x_values * frames_per_step, y_values, linestyle='-', color='b', linewidth=1.0)
         plt.xlabel(labels[0])
         plt.ylabel(labels[1])
         if save_dir:

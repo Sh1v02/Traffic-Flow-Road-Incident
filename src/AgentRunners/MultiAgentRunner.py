@@ -26,9 +26,9 @@ class MultiAgentRunner(AgentRunner):
         self.start_time = time.time()
 
         # Evaluate for the first time:
-        optimal_policy_reward, optimal_policy_speed = self.test()
+        optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc = self.test()
         self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
-                                          ['Team Returns', 'Average Speed'])
+                                          ['Team Returns', 'Average Speed', 'End Reached'])
 
         Helper.output_information("\n\nBeginning Training")
         while self.steps < self.max_steps:
@@ -103,16 +103,16 @@ class MultiAgentRunner(AgentRunner):
                 self.steps += 1
 
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
-                    optimal_policy_reward, optimal_policy_speed = self.test()
+                    optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc = self.test()
                     self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
-                                                      ['Team Returns', 'Average Speed'])
+                                                      ['Team Returns', 'Average Speed', 'End Reached'])
             self.episode += 1
 
             # Output episode results
             self.output_episode_results(episode_reward, self.steps - starting_episode_steps)
 
     def test(self):
-        done = False
+        done = trunc = False
         states, infos = self.test_env.reset()
 
         episode_steps = 0
@@ -138,7 +138,7 @@ class MultiAgentRunner(AgentRunner):
         print(Fore.GREEN + " - Agent Speed: ", avg_speed, Style.RESET_ALL)
         print(Fore.GREEN + "-------------\n" + Style.RESET_ALL)
 
-        return episode_reward, avg_speed
+        return episode_reward, avg_speed, trunc
 
     @staticmethod
     def calculate_team_spirit_rewards(individual_rewards, team_reward):
