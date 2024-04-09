@@ -48,5 +48,13 @@ class QMIXExperienceReplayBuffer(ReplayBuffer):
             self._rewards_memory[batch_indexes].squeeze(1),
             self._next_states_memory[batch_indexes],
             self._next_global_states_memory[batch_indexes],
-            self._dones_memory[batch_indexes].squeeze(1)
+            self._dones_memory[batch_indexes].squeeze(1),
+            None,
+            None
         )
+
+    def update_priorities(self, *args):
+        return
+
+    def linear_beta_anneal(self, *args):
+        return

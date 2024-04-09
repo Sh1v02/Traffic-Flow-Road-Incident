@@ -2,13 +2,13 @@ import random
 
 import numpy as np
 import torch
-from torch.optim.lr_scheduler import ExponentialLR
 
 from src.Agents.Agent import Agent
 from src.Buffers.QMIXExperienceReplayBuffer import QMIXExperienceReplayBuffer
+from src.Buffers.QMIXPrioritisedExperienceReplayBuffer import QMIXPrioritisedExperienceReplayBuffer
 from src.Models.QMIX.QMIX import QMIX
 from src.Utilities import multi_agent_settings, settings
-from src.Wrappers.GPUSupport import optimise
+from src.Wrappers.GPUSupport import optimise, tensor
 
 
 class QMIXAgent(Agent):
@@ -23,7 +23,10 @@ class QMIXAgent(Agent):
         self.min_epsilon = settings.QMIX_MIN_EPSILON
 
         self.replay_buffer = QMIXExperienceReplayBuffer(local_state_dims, global_state_dims,
-                                                        max_size=settings.QMIX_REPLAY_BUFFER_SIZE)
+                                                        max_size=settings.QMIX_REPLAY_BUFFER_SIZE) \
+            if not settings.QMIX_PER else (
+            QMIXPrioritisedExperienceReplayBuffer(local_state_dims, global_state_dims,
+                                                  max_size=settings.QMIX_REPLAY_BUFFER_SIZE))
 
         self.eval_parameters = (list(self.qmix.online_agent_networks.parameters()) +
                                 list(self.qmix.online_mixer_network.parameters()))
@@ -59,8 +62,8 @@ class QMIXAgent(Agent):
         if self.replay_buffer.size < self.batch_size:
             return
 
-        local_states, global_states, actions, rewards, next_local_states, next_global_states, dones = \
-            self.replay_buffer.sample_experience(batch_size=self.batch_size)
+        (local_states, global_states, actions, rewards, next_local_states, next_global_states, dones,
+         experience_indexes, imp_weights) = self.replay_buffer.sample_experience(batch_size=self.batch_size)
 
         if self.qmix.shared_agent_net:
             current_single_q_values, target_single_q_values = self._learn_shared_agents(local_states, actions,
@@ -79,8 +82,16 @@ class QMIXAgent(Agent):
 
         targets = rewards + (self.gamma * (1 - dones) * target_q_totals)
 
+        if settings.QMIX_PER:
+            self.replay_buffer.update_priorities(experience_indexes, targets - current_q_totals)
+            self.replay_buffer.linear_beta_anneal(self.steps)
+
         self.optimiser.zero_grad()
         loss = self.qmix.loss(current_q_totals, targets)
+        # Apply any importance weights to our loss (prioritised experience replay)
+        if imp_weights is not None:
+            loss *= tensor(imp_weights)
+        loss = torch.mean(loss)
         loss.backward()
         if settings.QMIX_GRADIENT_CLIP:
             torch.nn.utils.clip_grad_norm_(self.eval_parameters, 10)
@@ -152,7 +163,7 @@ class QMIXAgent(Agent):
 
     def get_agent_specific_config(self):
         if settings.AGENT_TYPE.lower() == "vdn":
-            return {
+            config = {
                 "VDN_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
                 "VDN_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
                 "VDN_LR": str(settings.QMIX_LR),
@@ -166,25 +177,37 @@ class QMIXAgent(Agent):
                 "VDN_EPSILON": str(settings.QMIX_EPSILON),
                 "VDN_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
                 "VDN_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON),
-                "VDN_LEARN_PER_EPISODE": str(settings.QMIX_LEARN_PER_EPISODE)
+                "VDN_LEARN_PER_EPISODE": str(settings.QMIX_LEARN_PER_EPISODE),
+                "PRIORITISED_EXPERIENCE_REPLAY": str(settings.QMIX_PER)
+            }
+        else:
+            config = {
+                "QMIX_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
+                "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
+                "QMIX_LR": str(settings.QMIX_LR),
+                "QMIX_GRADIENT_CLIP": str(settings.QMIX_GRADIENT_CLIP),
+                "QMIX_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
+                "QMIX_HYPER_NETWORK_LAYERS": str(settings.QMIX_HYPER_NETWORK_LAYERS),
+                "QMIX_HYPER_NETWORK_DIMS": str(settings.QMIX_HYPER_NETWORK_DIMS),
+                "QMIX_MIXER_NETWORK_DIMS": str(settings.QMIX_MIXER_NETWORK_DIMS),
+                "QMIX_SOFT_UPDATE": str(settings.QMIX_SOFT_UPDATE),
+                "QMIX_SOFT_UPDATE_TAU": str(settings.QMIX_SOFT_UPDATE_TAU),
+                "QMIX_HARD_UPDATE_NETWORKS_FREQUENCY": str(settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY),
+                "QMIX_REPLAY_BUFFER_SIZE": str(settings.QMIX_REPLAY_BUFFER_SIZE),
+                "QMIX_BATCH_SIZE": str(settings.QMIX_BATCH_SIZE),
+                "QMIX_EPSILON": str(settings.QMIX_EPSILON),
+                "QMIX_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
+                "QMIX_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON),
+                "QMIX_LEARN_PER_EPISODE": str(settings.QMIX_LEARN_PER_EPISODE),
+                "PRIORITISED_EXPERIENCE_REPLAY": str(settings.QMIX_PER)
             }
 
-        return {
-            "QMIX_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
-            "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
-            "QMIX_LR": str(settings.QMIX_LR),
-            "QMIX_GRADIENT_CLIP": str(settings.QMIX_GRADIENT_CLIP),
-            "QMIX_AGENT_NETWORK_DIMS": str(settings.QMIX_AGENT_NETWORK_DIMS),
-            "QMIX_HYPER_NETWORK_LAYERS": str(settings.QMIX_HYPER_NETWORK_LAYERS),
-            "QMIX_HYPER_NETWORK_DIMS": str(settings.QMIX_HYPER_NETWORK_DIMS),
-            "QMIX_MIXER_NETWORK_DIMS": str(settings.QMIX_MIXER_NETWORK_DIMS),
-            "QMIX_SOFT_UPDATE": str(settings.QMIX_SOFT_UPDATE),
-            "QMIX_SOFT_UPDATE_TAU": str(settings.QMIX_SOFT_UPDATE_TAU),
-            "QMIX_HARD_UPDATE_NETWORKS_FREQUENCY": str(settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY),
-            "QMIX_REPLAY_BUFFER_SIZE": str(settings.QMIX_REPLAY_BUFFER_SIZE),
-            "QMIX_BATCH_SIZE": str(settings.QMIX_BATCH_SIZE),
-            "QMIX_EPSILON": str(settings.QMIX_EPSILON),
-            "QMIX_EPSILON_DECAY": str(settings.QMIX_EPSILON_DECAY),
-            "QMIX_MIN_EPSILON": str(settings.QMIX_MIN_EPSILON),
-            "QMIX_LEARN_PER_EPISODE": str(settings.QMIX_LEARN_PER_EPISODE)
-        }
+        if settings.QMIX_PER:
+            config.update(
+                {
+                    "PRIORITISED_EXPERIENCE_REPLAY_ALPHA": settings.QMIX_PER_ALPHA,
+                    "PRIORITISED_EXPERIENCE_REPLAY_BETA": settings.QMIX_PER_BETA,
+                    "PRIORITISED_EXPERIENCE_REPLAY_EPSILON": settings.QMIX_PER_EPSILON
+                }
+            )
+        return config

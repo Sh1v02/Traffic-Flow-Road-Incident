@@ -69,6 +69,10 @@ QMIX_EPSILON_DECAY = 0.999999
 QMIX_MIN_EPSILON = 0.05
 QMIX_REPLAY_BUFFER_SIZE = 10000
 QMIX_GRADIENT_CLIP = False
+QMIX_PER = False
+QMIX_PER_ALPHA = 0.6
+QMIX_PER_BETA = 0.4
+QMIX_PER_EPSILON = 0.1
 
 
 # -------------------------- MAPPO Settings ---------------------------
@@ -87,7 +91,6 @@ MAPPO_BATCH_SIZE = 512
 MAPPO_UPDATE_EPOCHS = 10
 MAPPO_UPDATE_FREQUENCY = 1536
 MAPPO_PLOT_STEPS_PER_UPDATE = True
-
 
 date_as_str = datetime.now().strftime("%d-%m-%y_%H-%M-%S")
 

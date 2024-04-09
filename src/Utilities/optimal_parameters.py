@@ -47,16 +47,21 @@ def use_optimal_parameters():
     settings.QMIX_MIN_EPSILON = 0.05
     settings.QMIX_REPLAY_BUFFER_SIZE = 10000
     settings.QMIX_GRADIENT_CLIP = False
+    settings.QMIX_PER = False
+    settings.QMIX_PER_ALPHA = 0.6
+    settings.QMIX_PER_BETA = 0.4
+    settings.QMIX_PER_EPSILON = 0.1
     if settings.AGENT_TYPE == "vdn":
         settings.QMIX_SOFT_UPDATE = False
         settings.QMIX_LR = [5e-4, 1e-4, 250000, True]
 
     # -------------------------- MAPPO Optimal Parameters ---------------------------
-    settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "EP"  # Environment Provided    Agent Specific
+    settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "AS"  # Environment Provided    Agent Specific
+    multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING = True
     settings.MAPPO_NETWORK_DIMS = [256, 256, 256, 256]
     settings.MAPPO_CRITIC_LOSS_FUNCTION = "MSE"
-    settings.MAPPO_LR = [3e-4, 3e-3]
-    settings.MAPPO_DISCOUNT_FACTOR = 0.85
+    settings.MAPPO_LR = [3e-4, 3e-4]
+    settings.MAPPO_DISCOUNT_FACTOR = 0.8
     settings.MAPPO_GAE_LAMBDA = 0.95
     settings.MAPPO_EPSILON = 0.2
     settings.MAPPO_CRITIC_COEFFICIENT = 1
