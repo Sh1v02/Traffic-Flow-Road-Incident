@@ -1,4 +1,4 @@
-from src.Utilities import settings
+from src.Utilities import settings, multi_agent_settings
 
 
 # Sets all parameters to their optimal values
@@ -63,7 +63,7 @@ def use_optimal_parameters():
     settings.MAPPO_ENTROPY_COEFFICIENT = 0.4
     settings.MAPPO_ENTROPY_COEFFICIENT_DECAY = 0.99999
     settings.MAPPO_ENTROPY_COEFFICIENT_MIN = 0.001
-    settings.MAPPO_BATCH_SIZE = 512
     settings.MAPPO_UPDATE_EPOCHS = 10
     settings.MAPPO_UPDATE_FREQUENCY = 1536
+    settings.MAPPO_BATCH_SIZE = (settings.MAPPO_UPDATE_FREQUENCY * multi_agent_settings.AGENT_COUNT) / 6
     settings.MAPPO_PLOT_STEPS_PER_UPDATE = True

@@ -34,7 +34,10 @@ class MAPPOAgentRunner(AgentRunner):
         while self.steps < self.max_steps:
             done = False
             local_states, infos = self.env.reset()
-            global_state = self.env.get_global_state()
+            if settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "cl":
+                global_state = np.concatenate([local_state for local_state in local_states], axis=0)
+            else:
+                global_state = self.env.get_global_state()
 
             global_states = [global_state for _ in range(multi_agent_settings.AGENT_COUNT)]
 
@@ -65,7 +68,11 @@ class MAPPOAgentRunner(AgentRunner):
                                                              probabilities, global_states)
 
                 local_states = next_local_states
-                global_state = self.env.get_global_state()
+
+                if settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "cl":
+                    global_state = np.concatenate([local_state for local_state in local_states], axis=0)
+                else:
+                    global_state = self.env.get_global_state()
 
                 # Update the global_states
                 for agent_index in range(len(dones)):
