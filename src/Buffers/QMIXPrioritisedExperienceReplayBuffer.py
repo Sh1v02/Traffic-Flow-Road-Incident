@@ -89,7 +89,7 @@ class QMIXPrioritisedExperienceReplayBuffer(ReplayBuffer):
 
     # New priority for sampled experience is td error + epsilon (to prevent 0)
     def update_priorities(self, indexes, td_errors):
-        self._priorities[indexes] = np.abs(td_errors.detach().numpy()) + self.epsilon
+        self._priorities[indexes] = np.abs(td_errors.detach().cpu().numpy()) + self.epsilon
 
     def linear_beta_anneal(self, step):
         self.beta = min(
