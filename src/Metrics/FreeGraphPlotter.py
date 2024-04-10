@@ -24,7 +24,9 @@ class FreeGraphPlotter:
 
         stacked_rewards = np.empty(0)
         stacked_speeds = np.empty(0)
+        stacked_ends_reached = np.empty(0)
 
+        all_steps = np.empty(0)
         steps = np.empty(0)
 
         file_count = 0
@@ -33,9 +35,10 @@ class FreeGraphPlotter:
             if os.path.isfile(file_path):
                 if "rewards" not in item and "returns" not in item:
                     continue
-                steps, optimal_policy_rewards, optimal_policy_speeds = np.loadtxt(file_path, delimiter=',')
+                all_steps, optimal_policy_rewards, optimal_policy_speeds, optimal_policy_ends_reached = np.loadtxt(
+                    file_path, delimiter=',')
 
-                steps = steps[r_avg_window_size - 1:]
+                steps = all_steps[r_avg_window_size - 1:]
 
                 rolling_avg_rewards = np.convolve(optimal_policy_rewards,
                                                   np.ones(r_avg_window_size) / r_avg_window_size,
@@ -48,22 +51,26 @@ class FreeGraphPlotter:
                     (stacked_rewards, rolling_avg_rewards))
                 stacked_speeds = rolling_avg_speeds if stacked_speeds.size == 0 else np.vstack(
                     (stacked_speeds, rolling_avg_speeds))
+                stacked_ends_reached = optimal_policy_ends_reached if stacked_ends_reached.size == 0 else np.vstack(
+                    (stacked_ends_reached, optimal_policy_ends_reached))
 
                 file_count += 1
 
         if not plot_graphs:
-            return steps, stacked_rewards, stacked_speeds
+            return all_steps, steps, stacked_rewards, stacked_speeds, stacked_ends_reached
 
         # plots[key][0] = [plt_fig, plt_axis] --> eg: plots[key][0][0] = plt_fig
         # plots[key][1] = the values (rewards, speeds, etc)
         plots = {
             "Rolling Average Return": [plt.subplots(), stacked_rewards],
-            "Rolling Average Speed": [plt.subplots(), stacked_speeds]
+            "Rolling Average Speed": [plt.subplots(), stacked_speeds],
+            "Ends Reached": [plt.subplots(), stacked_ends_reached]
         }
 
         save_dir = directory + "/Results"
         os.makedirs(save_dir, exist_ok=True)
 
+        # TODO: Graph names only correct for rolling avg graphs!
         for key in plots:
             FreeGraphPlotter.plot_filled_graph(plots[key][0][1], steps, plots[key][1], parent_dir_name)
             plots[key][0][1].set_xlabel('Frames')
@@ -89,9 +96,10 @@ class FreeGraphPlotter:
         colour_index = 0
         rewards_fig, rewards_axis = plt.subplots()
         speeds_fig, speeds_axis = plt.subplots()
+        end_reached_fig, ends_reached_axis = plt.subplots()
         for run_directory in os.listdir(parent_directory):
             current_directory = os.path.join(parent_directory, run_directory)
-            steps, stacked_rewards, stacked_speeds = FreeGraphPlotter.plot_average(
+            all_steps, steps, stacked_rewards, stacked_speeds, stacked_ends_reached = FreeGraphPlotter.plot_average(
                 current_directory,
                 r_avg_window_size=r_avg_window_size,
                 plot_graphs=False
@@ -102,6 +110,8 @@ class FreeGraphPlotter:
             FreeGraphPlotter.plot_filled_graph(rewards_axis, steps, stacked_rewards, run_directory,
                                                line_colours[colour_index])
             FreeGraphPlotter.plot_filled_graph(speeds_axis, steps, stacked_speeds, run_directory,
+                                               line_colours[colour_index])
+            FreeGraphPlotter.plot_filled_graph(ends_reached_axis, all_steps, stacked_ends_reached, run_directory,
                                                line_colours[colour_index])
             colour_index += 1
 
@@ -119,6 +129,12 @@ class FreeGraphPlotter:
         speeds_axis.legend(fontsize='8')
         speeds_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
         speeds_fig.savefig(save_dir + "Speeds Rolling Average (window_size=" + str(r_avg_window_size) + ")")
+
+        ends_reached_axis.set_xlabel('Frames')
+        ends_reached_axis.set_ylabel('Ends Reached')
+        ends_reached_axis.legend(fontsize='8')
+        ends_reached_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
+        end_reached_fig.savefig(save_dir + "Ends Reached")
 
     @staticmethod
     def plot_multiple_individual_graphs(directory, r_avg_window_size=100):
