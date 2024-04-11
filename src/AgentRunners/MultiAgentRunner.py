@@ -27,7 +27,7 @@ class MultiAgentRunner(AgentRunner):
 
         # Evaluate for the first time:
         optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc = self.test()
-        self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
+        self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc,
                                           ['Team Returns', 'Average Speed', 'End Reached'])
 
         Helper.output_information("\n\nBeginning Training")
@@ -104,7 +104,7 @@ class MultiAgentRunner(AgentRunner):
 
                 if self.steps % settings.PLOT_STEPS_FREQUENCY == 0:
                     optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc = self.test()
-                    self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed,
+                    self.store_optimal_policy_results(optimal_policy_reward, optimal_policy_speed, optimal_policy_trunc,
                                                       ['Team Returns', 'Average Speed', 'End Reached'])
             self.episode += 1
 
