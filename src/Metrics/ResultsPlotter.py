@@ -44,32 +44,27 @@ class ResultsPlotter:
         config = {
             "TEST_TYPE": settings.RUN_TYPE,
             "AGENT_TYPE": str(settings.AGENT_TYPE.upper()),
+            "ENVIRONMENT_SEED": str(settings.ENVIRONMENT_SEED),
+            "SEED": str(settings.SEED),
+            "TRAINING_STEPS": str(settings.TRAINING_STEPS),
+            "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
+            "LANE_COUNT": str(graphics_settings.LANE_COUNT),
+            "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT)
         }
 
         if settings.RUN_TYPE.lower() == "multiagent":
             config.update(
                 {
                     "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
-                    "OBSTRUCTION_COUNT": graphics_settings.OBSTRUCTION_COUNT,
                     "WAIT_UNTIL_TERMINATED": str(multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
                     "DEATH_HANDLING": str(multi_agent_settings.DEATH_HANDLING),
                     "VALUE_FUNCTION_DEATH_MASKING": str(multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING),
                     "TEAM_SPIRIT": str(multi_agent_settings.TEAM_SPIRIT),
                     "SHARED_REPLAY_BUFFER": str(multi_agent_settings.SHARED_REPLAY_BUFFER),
-                    "PARAMETER_SHARING": str(multi_agent_settings.PARAMETER_SHARING)
+                    "PARAMETER_SHARING": str(multi_agent_settings.PARAMETER_SHARING),
+                    "NORMALISE_GLOBAL_STATE": str(settings.NORMALIZE_GLOBAL_STATE)
                 }
             )
-
-        config.update(
-            {
-                "ENVIRONMENT_SEED": str(settings.ENVIRONMENT_SEED),
-                "SEED": str(settings.SEED),
-                "TRAINING_STEPS": str(settings.TRAINING_STEPS),
-                "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
-                "LANE_COUNT": str(graphics_settings.LANE_COUNT),
-                "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT)
-            }
-        )
 
         config.update(self.agent.get_agent_specific_config())
 
