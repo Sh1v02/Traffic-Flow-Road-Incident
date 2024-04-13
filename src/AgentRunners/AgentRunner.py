@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 
 from src.Metrics.ResultsPlotter import ResultsPlotter
-from src.Utilities import settings
+from src.Utilities import settings, multi_agent_settings
 from src.Utilities.Constants import DEVICE
 from src.Utilities.Helper import Helper
 
@@ -19,6 +19,10 @@ class AgentRunner(ABC):
         self.steps = 0
         self.episode = 0
         self.max_steps = settings.TRAINING_STEPS
+
+        self.team_spirit_tau = multi_agent_settings.TEAM_SPIRIT[1]
+        self.interpolate_team_spirit = self.team_spirit_tau < multi_agent_settings.TEAM_SPIRIT[2]
+        self.interpolate_team_spirit_rate = (multi_agent_settings.TEAM_SPIRIT[2] - self.team_spirit_tau) / self.max_steps
 
         self.agent_type = settings.AGENT_TYPE.lower()
         self.start_time = time.time()

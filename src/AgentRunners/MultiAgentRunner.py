@@ -140,8 +140,11 @@ class MultiAgentRunner(AgentRunner):
 
         return episode_reward, avg_speed, trunc
 
-    @staticmethod
-    def calculate_team_spirit_rewards(individual_rewards, team_reward):
-        tau = multi_agent_settings.TEAM_SPIRIT[1]
-        team_spirited_rewards = tuple(((1 - tau) * reward) + (tau * team_reward) for reward in individual_rewards)
+    def calculate_team_spirit_rewards(self, individual_rewards, team_reward):
+        team_spirited_rewards = tuple(
+            ((1 - self.team_spirit_tau) * reward) + (self.team_spirit_tau * team_reward)
+            for reward in individual_rewards
+        )
+        self.team_spirit_tau = self.team_spirit_tau if not self.interpolate_team_spirit else (
+                self.team_spirit_tau + self.interpolate_team_spirit_rate)
         return team_spirited_rewards

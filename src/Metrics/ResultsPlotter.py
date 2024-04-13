@@ -44,6 +44,7 @@ class ResultsPlotter:
         config = {
             "TEST_TYPE": settings.RUN_TYPE,
             "AGENT_TYPE": str(settings.AGENT_TYPE.upper()),
+            "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
             "ENVIRONMENT_SEED": str(settings.ENVIRONMENT_SEED),
             "SEED": str(settings.SEED),
             "TRAINING_STEPS": str(settings.TRAINING_STEPS),
@@ -55,14 +56,13 @@ class ResultsPlotter:
         if settings.RUN_TYPE.lower() == "multiagent":
             config.update(
                 {
-                    "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
                     "WAIT_UNTIL_TERMINATED": str(multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
                     "DEATH_HANDLING": str(multi_agent_settings.DEATH_HANDLING),
                     "VALUE_FUNCTION_DEATH_MASKING": str(multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING),
                     "TEAM_SPIRIT": str(multi_agent_settings.TEAM_SPIRIT),
                     "SHARED_REPLAY_BUFFER": str(multi_agent_settings.SHARED_REPLAY_BUFFER),
                     "PARAMETER_SHARING": str(multi_agent_settings.PARAMETER_SHARING),
-                    "NORMALISE_GLOBAL_STATE": str(settings.NORMALIZE_GLOBAL_STATE)
+                    "NORMALISE_GLOBAL_STATE": str(multi_agent_settings.NORMALIZE_GLOBAL_STATE)
                 }
             )
 
