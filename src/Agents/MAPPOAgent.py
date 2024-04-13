@@ -137,7 +137,7 @@ class MAPPOAgent(PPOAgent):
 
     def _get_value_function_input(self, global_states, local_states):
         # Just return the global states as they were
-        if self.value_function_input_type == "ep":
+        if self.value_function_input_type == "ep" or self.value_function_input_type == "cl":
             return global_states
 
         # As defined in the MAPPO paper, concat each local observation onto the global state
