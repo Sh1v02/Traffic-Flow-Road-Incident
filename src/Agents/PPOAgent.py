@@ -52,10 +52,8 @@ class PPOAgent(Agent):
             return torch.argmax(action_distribution.probs).item()
 
         action = action_distribution.sample()
-        if value_function_state is not None and settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "as":
-            value_function_state = torch.concat((tensor(value_function_state), local_state), dim=0)
-        else:
-            value_function_state = tensor(value_function_state) if value_function_state is not None else local_state
+
+        value_function_state = tensor(value_function_state) if value_function_state is not None else local_state
 
         probability = torch.squeeze(action_distribution.log_prob(action)).item()
         action = torch.squeeze(action).item()

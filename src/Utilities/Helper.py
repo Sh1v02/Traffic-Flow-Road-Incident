@@ -63,7 +63,15 @@ class Helper:
         state_dims = len(states[0]) if is_multi_agent else len(states)
         action_dims = env.action_space[0].n if is_multi_agent else env.action_space.n
 
-        return state_dims, action_dims
+        value_function_input_type = (settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION if (
+                settings.AGENT_TYPE.lower() == "qmix") else settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION).lower()
+        global_state_dims = len(env.get_global_state(env.reset()[0]))
+        if value_function_input_type == "as":
+            global_state_dims = global_state_dims + state_dims
+        else:
+            global_state_dims = global_state_dims
+
+        return state_dims, action_dims, global_state_dims
 
 
     @staticmethod

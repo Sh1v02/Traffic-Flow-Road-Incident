@@ -182,6 +182,7 @@ class QMIXAgent(Agent):
             }
         else:
             config = {
+                "QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION": str(settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION),
                 "QMIX_AGENT_NETWORKS_SHARED": str(settings.QMIX_AGENT_NETWORKS_SHARED),
                 "QMIX_DISCOUNT_FACTOR": str(settings.QMIX_DISCOUNT_FACTOR),
                 "QMIX_LR": str(settings.QMIX_LR),

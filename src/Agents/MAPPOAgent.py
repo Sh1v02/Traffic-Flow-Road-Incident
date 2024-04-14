@@ -113,7 +113,6 @@ class MAPPOAgent(PPOAgent):
                 batch_values = values[batch]
                 batch_old_probabilities = old_probabilities[batch]
                 batch_global_states = global_states[batch]
-                batch_global_states_to_use = self._get_value_function_input(batch_global_states, batch_local_states)
                 batch_advantages = advantages[batch]
 
                 action_distribution = self.actor(batch_local_states)
@@ -129,7 +128,7 @@ class MAPPOAgent(PPOAgent):
 
                 # Calculate critic loss between the returns (taking advantage into account) and new network predictions
                 current_values_with_advantages = batch_advantages + batch_values
-                new_predicted_values = torch.squeeze(self.critic(batch_global_states_to_use))
+                new_predicted_values = torch.squeeze(self.critic(batch_global_states))
                 critic_loss = self.loss(current_values_with_advantages, new_predicted_values)
 
                 final_loss = actor_loss + (self.critic_coefficient * critic_loss) - (self.entropy_coefficient * entropy)

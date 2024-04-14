@@ -1,4 +1,5 @@
 import gym
+import numpy as np
 
 from src.Utilities import settings
 from src.Wrappers.GPUSupport import tensor
@@ -27,10 +28,24 @@ class CustomEnvironmentWrapper(gym.Wrapper):
 
         return self._transform_state(states), infos
 
-    def get_global_state(self):
+    def get_global_state(self, local_states):
+        if self.agent_type == 'mappo':
+            if settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "cl":
+                global_state = np.concatenate([local_state for local_state in local_states], axis=0)
+            else:
+                global_state = self.env.get_global_state().flatten()
+            return global_state
+
+        if self.agent_type == 'qmix':
+            if settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "cl":
+                global_state = tensor(np.concatenate([local_state for local_state in local_states], axis=0))
+            else:
+                global_state = tensor(self.env.get_global_state().flatten())
+            return global_state
+
         global_state = self.env.get_global_state().flatten()
 
-        if self.agent_type == "ddqn" or self.agent_type == "qmix" or self.agent_type == 'vdn':
+        if self.agent_type == "ddqn" or self.agent_type == 'vdn':
             global_state = tensor(global_state)
 
         return global_state

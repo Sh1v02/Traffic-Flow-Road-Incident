@@ -7,6 +7,7 @@ from src.AgentRunners import AgentRunner
 from src.Agents.QMIXAgent import QMIXAgent
 from src.Utilities import settings, multi_agent_settings
 from src.Utilities.Helper import Helper
+from src.Wrappers.GPUSupport import tensor
 
 
 class QMIXAgentRunner(AgentRunner):
@@ -14,7 +15,7 @@ class QMIXAgentRunner(AgentRunner):
         self.agent = QMIXAgent(torch.optim.Adam, local_state_dims, global_state_dims, action_dims,
                                optimiser_args={"lr": settings.QMIX_LR[0]})
 
-        super().__init__(env, test_env, self.agent)
+        super().__init__(env, test_env, self.agent, global_state_dims=global_state_dims)
 
         Helper.output_information("Multi Agent: " + str(multi_agent_settings.AGENT_COUNT))
         Helper.output_information("  - Training Steps: " + str(self.max_steps))
@@ -30,8 +31,15 @@ class QMIXAgentRunner(AgentRunner):
         Helper.output_information("\n\nBeginning Training")
         while self.steps < self.max_steps:
             done = False
+            dones = [False for _ in range(multi_agent_settings.AGENT_COUNT)]
             local_states, infos = self.env.reset()
-            global_state = self.env.get_global_state()
+            global_states = [tensor(np.zeros(self.global_state_dims)) for _ in
+                             range(multi_agent_settings.AGENT_COUNT)]
+            next_global_states = [tensor(np.zeros(self.global_state_dims)) for _ in
+                                  range(multi_agent_settings.AGENT_COUNT)]
+
+            if self.agent_type == "qmix":
+                global_states = self.update_global_states(local_states, global_states, dones)
 
             episode_reward = 0
 
@@ -39,7 +47,6 @@ class QMIXAgentRunner(AgentRunner):
             while not done:
                 actions = self.agent.get_action(local_states)
                 next_local_states, team_reward, done, trunc, infos = self.env.step(actions)
-                next_global_state = self.env.get_global_state()
 
                 rewards, dones = infos["agents_rewards"], infos["agents_dones"]
 
@@ -47,12 +54,18 @@ class QMIXAgentRunner(AgentRunner):
                 if multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED[0]:
                     done = all(dones)
 
+                if self.agent_type == "qmix":
+                    next_global_states = self.update_global_states(next_local_states, next_global_states, dones)
+
                 self.agent.store_experience_in_replay_buffer(
-                    local_states, global_state, actions, rewards, next_local_states, next_global_state, dones
+                    local_states, global_states, actions, rewards, next_local_states, next_global_states, dones
                 )
 
                 local_states = next_local_states
-                global_state = next_global_state
+
+                if self.agent_type == "qmix":
+                    global_states = self.update_global_states(local_states, global_states, dones)
+
                 episode_reward += team_reward
                 if not settings.QMIX_LEARN_PER_EPISODE:
                     self.agent.learn()

@@ -1,19 +1,21 @@
 import json
-from abc import ABC, abstractmethod
 import time
+from abc import ABC, abstractmethod
 
 import numpy as np
 import tensorflow as tf
+import torch
 
 from src.Metrics.ResultsPlotter import ResultsPlotter
 from src.Utilities import settings, multi_agent_settings
 from src.Utilities.Constants import DEVICE
 from src.Utilities.Helper import Helper
+from src.Wrappers.GPUSupport import tensor
 
 
 class AgentRunner(ABC):
     # Assumes that the child class has agents of only one type (eg: all PPO)
-    def __init__(self, env, test_env, agent):
+    def __init__(self, env, test_env, agent, global_state_dims=0):
         self.env = env
         self.test_env = test_env
         self.steps = 0
@@ -25,6 +27,11 @@ class AgentRunner(ABC):
         self.interpolate_team_spirit_rate = (multi_agent_settings.TEAM_SPIRIT[2] - self.team_spirit_tau) / self.max_steps
 
         self.agent_type = settings.AGENT_TYPE.lower()
+        self.global_state_dims = global_state_dims
+        self.vf_input_representation = (settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION if self.agent_type == "qmix" else (
+            settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION)).lower()
+
+
         self.start_time = time.time()
 
         self.rp = ResultsPlotter(agent)
@@ -84,6 +91,28 @@ class AgentRunner(ABC):
             time_remaining = time_so_far * multiplier
             Helper.output_information("Estimated Time Remaining: " + str(time_remaining / 60) + " minutes = " + str(
                 time_remaining / 3600) + " hours")
+
+    def update_global_states(self, local_states, global_states, dones):
+        global_state = self.env.get_global_state(local_states)
+        # Update the global_states
+        for agent_index in range(len(dones)):
+            # If value function death masking (set the global state to 0 here)
+            if multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING and dones[agent_index]:
+                if self.agent_type == "qmix":
+                    global_states[agent_index] = tensor(np.zeros(self.global_state_dims))
+                else:
+                    global_states[agent_index] = np.zeros(self.global_state_dims)
+            else:
+                if self.vf_input_representation == "as":
+                    if self.agent_type == "qmix":
+                        global_states[agent_index] = torch.cat((global_state, local_states[agent_index]), dim=0)
+                    else:
+                        global_states[agent_index] = np.concatenate((global_state, local_states[agent_index]),
+                                                                    axis=0)
+                else:
+                    global_states[agent_index] = global_state
+        return global_states
+
 
     @abstractmethod
     def train(self):

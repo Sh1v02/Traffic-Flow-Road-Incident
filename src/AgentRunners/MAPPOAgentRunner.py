@@ -15,8 +15,8 @@ class MAPPOAgentRunner(AgentRunner):
         if settings.MAPPO_CRITIC_LOSS_FUNCTION.lower() == "huber":
             loss = torch.nn.HuberLoss(delta=10.0)
         self.agent = MAPPOAgent(optimiser, loss, local_state_dims, global_state_dims, action_dims)
-        self.global_state_dims = global_state_dims
-        super().__init__(env, test_env, self.agent)
+
+        super().__init__(env, test_env, self.agent, global_state_dims=global_state_dims)
 
         Helper.output_information("Multi Agent: " + str(multi_agent_settings.AGENT_COUNT))
         Helper.output_information("  - Training Steps: " + str(self.max_steps))
@@ -33,13 +33,11 @@ class MAPPOAgentRunner(AgentRunner):
 
         while self.steps < self.max_steps:
             done = False
+            dones = [False for _ in range(multi_agent_settings.AGENT_COUNT)]
             local_states, infos = self.env.reset()
-            if settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "cl":
-                global_state = np.concatenate([local_state for local_state in local_states], axis=0)
-            else:
-                global_state = self.env.get_global_state()
+            global_states = [None for _ in range(multi_agent_settings.AGENT_COUNT)]
 
-            global_states = [global_state for _ in range(multi_agent_settings.AGENT_COUNT)]
+            global_states = self.update_global_states(local_states, global_states, dones)
 
             episode_reward = 0
 
@@ -69,18 +67,7 @@ class MAPPOAgentRunner(AgentRunner):
 
                 local_states = next_local_states
 
-                if settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "cl":
-                    global_state = np.concatenate([local_state for local_state in local_states], axis=0)
-                else:
-                    global_state = self.env.get_global_state()
-
-                # Update the global_states
-                for agent_index in range(len(dones)):
-                    # If value function death masking (set the global state to 0 here)
-                    if multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING and dones[agent_index]:
-                        global_states[agent_index] = np.zeros(self.global_state_dims)
-                    else:
-                        global_states[agent_index] = global_state
+                global_states = self.update_global_states(local_states, global_states, dones)
 
                 episode_reward += team_reward
                 self.agent.learn()
