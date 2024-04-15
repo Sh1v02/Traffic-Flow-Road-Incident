@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+import torch
 
 from src.Utilities import settings
 from src.Wrappers.GPUSupport import tensor
@@ -38,7 +39,7 @@ class CustomEnvironmentWrapper(gym.Wrapper):
 
         if self.agent_type == 'qmix':
             if settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION.lower() == "cl":
-                global_state = tensor(np.concatenate([local_state for local_state in local_states], axis=0))
+                global_state = torch.cat(local_states, dim=0)
             else:
                 global_state = tensor(self.env.get_global_state().flatten())
             return global_state
