@@ -10,7 +10,7 @@ from src.Utilities.Helper import Helper
 
 ENVIRONMENT_SEED = 4
 SEED = 4
-RANDOM_SEED = False
+RANDOM_SEED = True
 
 AGENT_TYPE = "mappo"
 USE_OPTIMAL_PARAMETERS = False
