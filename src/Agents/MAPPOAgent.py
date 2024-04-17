@@ -32,8 +32,8 @@ class MAPPOAgent(PPOAgent):
         self.actor = PPOActorNetwork(optimiser, loss, local_state_dims, action_dims,
                                      hidden_layer_dims=settings.MAPPO_NETWORK_DIMS,
                                      optimiser_args={"lr": self.actor_lr})
-        self.critic = MAPPOCriticNetwork(optimiser, loss, local_state_dims, global_state_dims,
-                                         self.value_function_input_type, hidden_layer_dims=settings.MAPPO_NETWORK_DIMS,
+        self.critic = MAPPOCriticNetwork(optimiser, loss, global_state_dims,
+                                         hidden_layer_dims=settings.MAPPO_NETWORK_DIMS,
                                          optimiser_args={"lr": self.critic_lr})
 
         self.replay_buffer = SharedPPOReplayBuffer(global_states_buffer_required=True) \
