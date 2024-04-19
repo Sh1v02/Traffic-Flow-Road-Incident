@@ -16,12 +16,8 @@ class Helper:
 
         # TODO: implement for agents types than ppo?
         # We want to record optimal policy (no exploration) only after the latest updates, and then not til the next
-        test_env_record_frequency = None
-        if settings.AGENT_TYPE.lower() == "ppo":
-            all_update_steps = [i for i in range(0, settings.TRAINING_STEPS, settings.PPO_UPDATE_FREQUENCY)]
-            test_env_record_frequency = [
-                math.ceil(update / settings.PLOT_STEPS_FREQUENCY) for update in all_update_steps
-            ]
+
+        test_env_record_frequency = [i for i in range(settings.TRAINING_STEPS // settings.PLOT_STEPS_FREQUENCY)]
 
         test_env = Helper.initialise_env(config=config, record_frequency=test_env_record_frequency,
                                          folder_name="OptimalPolicyVideos")
