@@ -24,13 +24,14 @@ class AgentRunner(ABC):
 
         self.team_spirit_tau = multi_agent_settings.TEAM_SPIRIT[1]
         self.interpolate_team_spirit = self.team_spirit_tau < multi_agent_settings.TEAM_SPIRIT[2]
-        self.interpolate_team_spirit_rate = (multi_agent_settings.TEAM_SPIRIT[2] - self.team_spirit_tau) / self.max_steps
+        self.interpolate_team_spirit_rate = (multi_agent_settings.TEAM_SPIRIT[
+                                                 2] - self.team_spirit_tau) / self.max_steps
 
         self.agent_type = settings.AGENT_TYPE.lower()
         self.global_state_dims = global_state_dims
-        self.vf_input_representation = (settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION if self.agent_type == "qmix" else (
-            settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION)).lower()
-
+        self.vf_input_representation = (
+            settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION if self.agent_type == "qmix" else (
+                settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION)).lower()
 
         self.start_time = time.time()
 
@@ -113,6 +114,14 @@ class AgentRunner(ABC):
                     global_states[agent_index] = global_state
         return global_states
 
+    def calculate_team_spirit_rewards(self, individual_rewards, team_reward):
+        team_spirited_rewards = tuple(
+            ((1 - self.team_spirit_tau) * reward) + (self.team_spirit_tau * team_reward)
+            for reward in individual_rewards
+        )
+        self.team_spirit_tau = self.team_spirit_tau if not self.interpolate_team_spirit else (
+                self.team_spirit_tau + self.interpolate_team_spirit_rate)
+        return team_spirited_rewards
 
     @abstractmethod
     def train(self):

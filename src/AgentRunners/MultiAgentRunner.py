@@ -139,12 +139,3 @@ class MultiAgentRunner(AgentRunner):
         print(Fore.GREEN + "-------------\n" + Style.RESET_ALL)
 
         return episode_reward, avg_speed, trunc
-
-    def calculate_team_spirit_rewards(self, individual_rewards, team_reward):
-        team_spirited_rewards = tuple(
-            ((1 - self.team_spirit_tau) * reward) + (self.team_spirit_tau * team_reward)
-            for reward in individual_rewards
-        )
-        self.team_spirit_tau = self.team_spirit_tau if not self.interpolate_team_spirit else (
-                self.team_spirit_tau + self.interpolate_team_spirit_rate)
-        return team_spirited_rewards
