@@ -58,17 +58,19 @@ def use_optimal_parameters():
     # -------------------------- MAPPO Optimal Parameters ---------------------------
     settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "AS"  # Environment Provided    Agent Specific
     multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING = True
+    multi_agent_settings.NORMALIZE_GLOBAL_STATE = True
+    multi_agent_settings.SHARED_REPLAY_BUFFER = True
     settings.MAPPO_NETWORK_DIMS = [256, 256, 256, 256]
     settings.MAPPO_CRITIC_LOSS_FUNCTION = "MSE"
     settings.MAPPO_LR = [3e-4, 3e-4]
-    settings.MAPPO_DISCOUNT_FACTOR = 0.8
-    settings.MAPPO_GAE_LAMBDA = 0.95
+    settings.MAPPO_DISCOUNT_FACTOR = 0.85
+    settings.MAPPO_GAE_LAMBDA = 0.8
     settings.MAPPO_EPSILON = 0.2
     settings.MAPPO_CRITIC_COEFFICIENT = 1
-    settings.MAPPO_ENTROPY_COEFFICIENT = 0.4
+    settings.MAPPO_ENTROPY_COEFFICIENT = 0.2
     settings.MAPPO_ENTROPY_COEFFICIENT_DECAY = 0.99999
     settings.MAPPO_ENTROPY_COEFFICIENT_MIN = 0.001
     settings.MAPPO_UPDATE_EPOCHS = 10
     settings.MAPPO_UPDATE_FREQUENCY = 1536
-    settings.MAPPO_BATCH_SIZE = (settings.MAPPO_UPDATE_FREQUENCY * multi_agent_settings.AGENT_COUNT) / 6
+    settings.MAPPO_BATCH_SIZE = (settings.MAPPO_UPDATE_FREQUENCY * multi_agent_settings.AGENT_COUNT) / 2
     settings.MAPPO_PLOT_STEPS_PER_UPDATE = True
