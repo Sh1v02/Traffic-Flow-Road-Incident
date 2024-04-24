@@ -21,26 +21,27 @@ def use_optimal_parameters():
     settings.PPO_GAE_LAMBDA = 0.95
     settings.PPO_EPSILON = 0.2
     settings.PPO_CRITIC_COEFFICIENT = 1
-    settings.PPO_ENTROPY_COEFFICIENT = 0.2
+    settings.PPO_ENTROPY_COEFFICIENT = 0.2  # 0.05
     settings.PPO_ENTROPY_COEFFICIENT_DECAY = 0.999
     settings.PPO_ENTROPY_COEFFICIENT_MIN = 0.001
-    settings.PPO_BATCH_SIZE = 512
+    settings.PPO_BATCH_SIZE = 512  # 1536
     settings.PPO_UPDATE_FREQUENCY = 1536
     settings.PPO_PLOT_STEPS_PER_UPDATE = True
 
     # -------------------------- QMIX Optimal Parameters ----------------------------
-    settings.QMIX_PLOT_STEPS_PER_UPDATE = True
+    settings.QMIX_VALUE_FUNCTION_INPUT_REPRESENTATION = "EP"
+    multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING = True
+    settings.QMIX_PLOT_STEPS_PER_UPDATE = False
     settings.QMIX_LEARN_PER_EPISODE = False
     settings.QMIX_AGENT_NETWORKS_SHARED = True
     settings.QMIX_AGENT_NETWORK_DIMS = [256, 256, 256, 256]
     settings.QMIX_HYPER_NETWORK_LAYERS = 2
     settings.QMIX_HYPER_NETWORK_DIMS = 64
-    settings.QMIX_MIXER_NETWORK_DIMS = 32
-    settings.QMIX_DISCOUNT_FACTOR = 0.99
-    settings.QMIX_LR = [5e-4, 1e-4, 250000, True]
-    settings.QMIX_SOFT_UPDATE = False
+    settings.QMIX_MIXER_NETWORK_DIMS = 96
+    settings.QMIX_DISCOUNT_FACTOR = 0.9
+    settings.QMIX_LR = [3e-4, 1e-4, 250000, False]
+    settings.QMIX_SOFT_UPDATE = True
     settings.QMIX_SOFT_UPDATE_TAU = 0.005
-    settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY = 500
     settings.QMIX_BATCH_SIZE = 32
     settings.QMIX_EPSILON = 1.0
     settings.QMIX_EPSILON_DECAY = 0.999999
@@ -51,9 +52,10 @@ def use_optimal_parameters():
     settings.QMIX_PER_ALPHA = 0.6
     settings.QMIX_PER_BETA = 0.4
     settings.QMIX_PER_EPSILON = 0.1
-    if settings.AGENT_TYPE == "vdn":
+    if settings.AGENT_TYPE.lower() == "vdn":
         settings.QMIX_SOFT_UPDATE = False
-        settings.QMIX_LR = [5e-4, 1e-4, 250000, True]
+        settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY = 500  # TODO: try 50
+        settings.QMIX_DISCOUNT_FACTOR = 0.85
 
     # -------------------------- MAPPO Optimal Parameters ---------------------------
     settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "AS"  # Environment Provided    Agent Specific

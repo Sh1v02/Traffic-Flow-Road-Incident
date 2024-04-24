@@ -15,7 +15,7 @@ RANDOM_SEED = True
 AGENT_TYPE = "mappo"
 USE_OPTIMAL_PARAMETERS = False
 
-PLOT_STEPS_FREQUENCY = 25  # Might be overridden when configuring, check PPO_PLOT_STEPS_PER_UPDATE
+PLOT_STEPS_FREQUENCY = 1536  # Might be overridden when configuring, check PPO_PLOT_STEPS_PER_UPDATE
 TRAINING_STEPS = 300_000
 RENDER_ENVIRONMENT = True
 RECORD_EPISODES = [False, 500]

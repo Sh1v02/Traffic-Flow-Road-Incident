@@ -1,11 +1,20 @@
 import os
 import shutil
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from scipy.signal import savgol_filter
+import distinctipy
 
+font = {'family': 'Arial',
+        'weight': 'normal',
+        'size': 12}
+
+plt.rc('font', **font)
+
+dpi = 300
+smooth_graphs = False
 
 class FreeGraphPlotter:
 
@@ -43,7 +52,8 @@ class FreeGraphPlotter:
 
         row_data = np.round(
             np.array(
-                [np.mean(max_returns), np.floor(np.mean(max_return_steps)), np.mean(max_speeds), np.mean(max_speed_steps),
+                [np.mean(max_returns), np.floor(np.mean(max_return_steps)), np.mean(max_speeds),
+                 np.mean(max_speed_steps),
                  np.floor(np.mean(max_successes)), np.mean(max_success_rates)]
             ),
             decimals=2
@@ -56,11 +66,17 @@ class FreeGraphPlotter:
     @staticmethod
     def plot_filled_graph(plot_axis, steps, values, label, colour='blue'):
         mean_rewards = np.mean(values, axis=0)
-        min_rewards = np.min(values, axis=0)
-        max_rewards = np.max(values, axis=0)
 
-        plot_axis.plot(steps * 15, mean_rewards, label=label, linewidth=1.0, color=colour)
-        plot_axis.fill_between(steps * 15, min_rewards, max_rewards, color=colour, alpha=0.07)
+        standard_error = (np.std(values) / np.sqrt(2))
+        min_rewards = mean_rewards - standard_error
+        max_rewards = mean_rewards + standard_error
+
+        if smooth_graphs:
+            mean_rewards = savgol_filter(mean_rewards, 5, 2)
+            min_rewards = savgol_filter(min_rewards, 7, 2)
+            max_rewards = savgol_filter(max_rewards, 7, 2)
+        plot_axis.plot(steps * 15, mean_rewards, marker='o', markersize=1, label=label, linewidth=1.2, color=colour)
+        plot_axis.fill_between(steps * 15, min_rewards, max_rewards, color=colour, alpha=0.15)
         plot_axis.grid(True)
 
     # Given a directory containing n number of runs (rewards.txt) of the same type, plot the average and min/max range
@@ -126,7 +142,7 @@ class FreeGraphPlotter:
             plots[key][0][1].legend(fontsize='8')
             figure_save_dir = save_dir + "/" + key.replace(" ", "_") + "_window=" + str(
                 r_avg_window_size) + "_runs=" + str(file_count)
-            plots[key][0][0].savefig(figure_save_dir)
+            plots[key][0][0].savefig(figure_save_dir, dpi=dpi)
 
     # Takes in:
     # - parent_directory
@@ -138,7 +154,9 @@ class FreeGraphPlotter:
     #       - rewards_2.txt
     @staticmethod
     def plot_multiple_average_graphs(parent_directory, r_avg_window_size=100):
-        line_colours = ['blue', 'red', 'green', 'orange', 'cyan', 'black', 'purple', 'gray', 'yellow', 'magenta']
+        num_folders_in_parent_dir = len(os.listdir(parent_directory))
+        # line_colours = ['blue', 'red', 'green', 'magenta', 'cyan', 'black', 'purple', 'gray', 'yellow', 'orange']
+        line_colours = distinctipy.get_colors(num_folders_in_parent_dir)
         colour_index = 0
         columns = ['Return', 'Step', 'Speed (mph)', 'Step',
                    'Count', 'Rate (0 - 1)']
@@ -148,6 +166,8 @@ class FreeGraphPlotter:
         end_reached_fig, ends_reached_axis = plt.subplots()
         for run_directory in os.listdir(parent_directory):
             current_directory = os.path.join(parent_directory, run_directory)
+            if not os.path.isdir(current_directory):
+                continue
             all_steps, steps, stacked_rewards, stacked_speeds, stacked_ends_reached = FreeGraphPlotter.plot_average(
                 current_directory,
                 r_avg_window_size=r_avg_window_size,
@@ -174,24 +194,24 @@ class FreeGraphPlotter:
         rewards_axis.set_ylabel('Rolling Average Return')
         rewards_axis.legend(fontsize='8')
         rewards_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
-        rewards_fig.savefig(save_dir + "Returns Rolling Average (window_size=" + str(r_avg_window_size) + ")")
+        rewards_fig.savefig(save_dir + "Returns Rolling Average (window_size=" + str(r_avg_window_size) + ")", dpi=dpi)
 
         speeds_axis.set_xlabel('Frames')
         speeds_axis.set_ylabel('Rolling Average Speed')
         speeds_axis.legend(fontsize='8')
         speeds_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
-        speeds_fig.savefig(save_dir + "Speeds Rolling Average (window_size=" + str(r_avg_window_size) + ")")
+        speeds_fig.savefig(save_dir + "Speeds Rolling Average (window_size=" + str(r_avg_window_size) + ")", dpi=dpi)
 
         ends_reached_axis.set_xlabel('Frames')
         ends_reached_axis.set_ylabel('Ends Reached')
         ends_reached_axis.legend(fontsize='8')
         ends_reached_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
-        end_reached_fig.savefig(save_dir + "Ends Reached")
+        end_reached_fig.savefig(save_dir + "Ends Reached", dpi=dpi)
 
         table_save_dir = save_dir + "/Table"
         os.makedirs(table_save_dir, exist_ok=True)
 
-        df.to_csv(table_save_dir + "/dataframe")
+        df.to_csv(table_save_dir + "/dataframe.csv")
         latex_table_format = {
             'column_format': 'ccc|cc|cc',
             'bold_rows': True,
@@ -222,7 +242,8 @@ class FreeGraphPlotter:
             if os.path.isfile(file_path):
                 if "rewards" not in item and "returns" not in item:
                     continue
-                steps, optimal_policy_rewards, optimal_policy_speeds = np.loadtxt(file_path, delimiter=',')
+                steps, optimal_policy_rewards, optimal_policy_speeds, optimal_policy_ends_reached = (
+                    np.loadtxt(file_path, delimiter=','))
 
                 rolling_avg_steps = steps[r_avg_window_size - 1:]
 
@@ -245,7 +266,7 @@ class FreeGraphPlotter:
 
         rolling_avg_rewards_axis.legend(fontsize='8')
 
-        rolling_avg_rewards_fig.savefig(save_dir + "/individual_rolling_averages_" + str(r_avg_window_size))
+        rolling_avg_rewards_fig.savefig(save_dir + "/individual_rolling_averages_" + str(r_avg_window_size), dpi=dpi)
 
     @staticmethod
     def download_txt_files(directory_to_search, save_directory, file_to_search_for="returns.txt", multiple=False):
@@ -293,15 +314,15 @@ class FreeGraphPlotter:
 # TODO: Label the axis on the plots
 if __name__ == '__main__':
     local_path = "../../"
-    plots_dir = local_path + "ForTheReport/MAPPO/Tuning/2 Agents 9 Obstructions/as_epochs_batches_updates/epochs=10"
+    plots_dir = local_path + "ForTheReport/MAPPO/Tuning/2 Agents 9 Obstructions/learning_rate"
 
     # download_from = plots_dir + "4 Agents 9 Obstructions/Standard"
     # download_to = plots_dir + "4 Agents 9 Obstructions/Standard"
 
-    # FreeGraphPlotter.download_txt_files(plots_dir, plots_dir, multiple=True)
-    #
     # average_dir = plots_dir + "gae_lambda"
-    FreeGraphPlotter.plot_multiple_average_graphs(plots_dir)
 
-    # FreeGraphPlotter.plot_multiple_individual_graphs("", r_avg_window_size=1500)
-    # FreeGraphPlotter.plot_average("TestDownloads")
+    # FreeGraphPlotter.plot_multiple_individual_graphs(plots_dir)
+    # FreeGraphPlotter.plot_average(plots_dir)
+
+    FreeGraphPlotter.download_txt_files(plots_dir, plots_dir, multiple=True)
+    FreeGraphPlotter.plot_multiple_average_graphs(plots_dir)
