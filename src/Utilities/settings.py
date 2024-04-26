@@ -5,7 +5,7 @@ from random import seed
 import torch
 from numpy.random import seed as np_seed
 
-from src.Utilities import optimal_parameters
+from src.Utilities import optimal_parameters, multi_agent_settings
 from src.Utilities.Helper import Helper
 
 ENVIRONMENT_SEED = 4
@@ -104,10 +104,12 @@ SAVE_DIR = ""
 
 
 def configure_settings():
+    global ENVIRONMENT_SEED, SEED, PLOT_STEPS_FREQUENCY, USE_OPTIMAL_PARAMETERS
+    if multi_agent_settings.AGENT_COUNT == 4:
+        ENVIRONMENT_SEED = 14
+
     # This has to remain constant to ensure that the environment itself, such as road and car positions, doesn't change
     np_seed(ENVIRONMENT_SEED)
-
-    global SEED, PLOT_STEPS_FREQUENCY, USE_OPTIMAL_PARAMETERS
 
     if RANDOM_SEED:
         SEED = random.randint(0, 100)
