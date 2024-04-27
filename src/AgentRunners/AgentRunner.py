@@ -24,8 +24,9 @@ class AgentRunner(ABC):
 
         self.team_spirit_tau = multi_agent_settings.TEAM_SPIRIT[1]
         self.interpolate_team_spirit = self.team_spirit_tau < multi_agent_settings.TEAM_SPIRIT[2]
+        steps_to_max_team_spirit = multi_agent_settings.TEAM_SPIRIT[3]
         self.interpolate_team_spirit_rate = (multi_agent_settings.TEAM_SPIRIT[
-                                                 2] - self.team_spirit_tau) / self.max_steps
+                                                 2] - self.team_spirit_tau) / steps_to_max_team_spirit
 
         self.agent_type = settings.AGENT_TYPE.lower()
         self.global_state_dims = global_state_dims
@@ -115,6 +116,9 @@ class AgentRunner(ABC):
         return global_states
 
     def calculate_team_spirit_rewards(self, individual_rewards, team_reward):
+        if self.team_spirit_tau >= 1.0:
+            return individual_rewards
+
         team_spirited_rewards = tuple(
             ((1 - self.team_spirit_tau) * reward) + (self.team_spirit_tau * team_reward)
             for reward in individual_rewards

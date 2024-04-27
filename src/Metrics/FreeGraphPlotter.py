@@ -14,7 +14,7 @@ font = {'family': 'Arial',
 plt.rc('font', **font)
 
 dpi = 300
-smooth_graphs = False
+smooth_standard_errors = True
 
 class FreeGraphPlotter:
 
@@ -64,15 +64,16 @@ class FreeGraphPlotter:
         return df
 
     @staticmethod
-    def plot_filled_graph(plot_axis, steps, values, label, colour='blue'):
+    def plot_filled_graph(plot_axis, steps, values, label, colour='blue', allow_negatives=True):
         mean_rewards = np.mean(values, axis=0)
 
-        standard_error = (np.std(values) / np.sqrt(2))
+        standard_error = 1.0 * (np.std(values) / np.sqrt(2))
         min_rewards = mean_rewards - standard_error
         max_rewards = mean_rewards + standard_error
+        if not allow_negatives:
+            min_rewards = np.maximum(min_rewards, 0)
 
-        if smooth_graphs:
-            mean_rewards = savgol_filter(mean_rewards, 5, 2)
+        if smooth_standard_errors:
             min_rewards = savgol_filter(min_rewards, 7, 2)
             max_rewards = savgol_filter(max_rewards, 7, 2)
         plot_axis.plot(steps * 15, mean_rewards, marker='o', markersize=1, label=label, linewidth=1.2, color=colour)
@@ -164,6 +165,9 @@ class FreeGraphPlotter:
         rewards_fig, rewards_axis = plt.subplots()
         speeds_fig, speeds_axis = plt.subplots()
         end_reached_fig, ends_reached_axis = plt.subplots()
+        rewards_axis.margins(0, 0)
+        speeds_axis.margins(0, 0)
+        ends_reached_axis.margins(0, 0)
         for run_directory in os.listdir(parent_directory):
             current_directory = os.path.join(parent_directory, run_directory)
             if not os.path.isdir(current_directory):
@@ -182,7 +186,7 @@ class FreeGraphPlotter:
             FreeGraphPlotter.plot_filled_graph(speeds_axis, steps, stacked_speeds, run_directory,
                                                line_colours[colour_index])
             FreeGraphPlotter.plot_filled_graph(ends_reached_axis, all_steps, stacked_ends_reached, run_directory,
-                                               line_colours[colour_index])
+                                               line_colours[colour_index], allow_negatives=False)
             colour_index += 1
 
             df = FreeGraphPlotter.save_stats_df_to_csv(current_directory, df, r_avg_window_size=r_avg_window_size)
@@ -314,7 +318,7 @@ class FreeGraphPlotter:
 # TODO: Label the axis on the plots
 if __name__ == '__main__':
     local_path = "../../"
-    plots_dir = local_path + "ForTheReport/MAPPO/Tuning/2 Agents 9 Obstructions/learning_rate"
+    plots_dir = local_path + "ForTheReport/Experiments/Experiment_3/3,9,3/MAPPO"
 
     # download_from = plots_dir + "4 Agents 9 Obstructions/Standard"
     # download_to = plots_dir + "4 Agents 9 Obstructions/Standard"
