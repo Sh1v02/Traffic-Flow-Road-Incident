@@ -11,7 +11,7 @@ from src.Wrappers.GPUSupport import optimise
 
 
 class QMIX(nn.Module):
-    def __init__(self, local_state_dims, global_state_dims, action_dims, loss=torch.nn.MSELoss()):
+    def __init__(self, local_state_dims, global_state_dims, action_dims, loss=torch.nn.MSELoss(reduction='none')):
         super().__init__()
         self.shared_agent_net = settings.QMIX_AGENT_NETWORKS_SHARED
         if self.shared_agent_net:

@@ -23,14 +23,14 @@ class QMIXExperienceReplayBuffer(ReplayBuffer):
 
     # Stores the experience as tensors in their respective memory
     def add_experience(self, *args):
-        local_states, global_state, actions, rewards, next_states, next_global_state, dones = args
+        local_states, global_states, actions, rewards, next_states, next_global_states, dones = args
         for agent_index in range(multi_agent_settings.AGENT_COUNT):
             self._local_states_memory[self._new_element_pointer] = local_states[agent_index]
-            self._global_states_memory[self._new_element_pointer] = global_state
+            self._global_states_memory[self._new_element_pointer] = global_states[agent_index]
             self._actions_memory[self._new_element_pointer] = tensor(actions[agent_index])
             self._rewards_memory[self._new_element_pointer] = tensor(rewards[agent_index])
             self._next_states_memory[self._new_element_pointer] = next_states[agent_index]
-            self._next_global_states_memory[self._new_element_pointer] = next_global_state
+            self._next_global_states_memory[self._new_element_pointer] = next_global_states[agent_index]
             self._dones_memory[self._new_element_pointer] = tensor(dones[agent_index])
 
             # Cyclic buffer -> replace the oldest element by overwriting its position
@@ -48,5 +48,13 @@ class QMIXExperienceReplayBuffer(ReplayBuffer):
             self._rewards_memory[batch_indexes].squeeze(1),
             self._next_states_memory[batch_indexes],
             self._next_global_states_memory[batch_indexes],
-            self._dones_memory[batch_indexes].squeeze(1)
+            self._dones_memory[batch_indexes].squeeze(1),
+            None,
+            None
         )
+
+    def update_priorities(self, *args):
+        return
+
+    def linear_beta_anneal(self, *args):
+        return

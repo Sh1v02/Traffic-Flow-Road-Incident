@@ -14,11 +14,15 @@ class ResultsPlotter:
         self.steps_history = np.empty(0)
         self.reward_history = np.empty(0)
         self.speed_history = np.empty(0)
+        self.trunc_history = np.empty(0)
+        self.trunc_count = 0
 
     def save_final_results(self):
         self.plot_graph(self.steps_history, self.reward_history, "returns", save_dir=settings.SAVE_DIR)
         self.plot_graph(self.steps_history, self.speed_history, "speed_history", save_dir=settings.SAVE_DIR,
-                        labels=['Steps', 'Speed'])
+                        labels=['Frames', 'Speed'])
+        self.plot_graph(self.steps_history, self.trunc_history, "end_reached_history", save_dir=settings.SAVE_DIR,
+                        labels=['Frames', 'End Reached'])
         r_avg_windows = [100, 500]
         for r_avg_window in r_avg_windows:
             if len(self.reward_history) >= r_avg_window:
@@ -33,36 +37,34 @@ class ResultsPlotter:
 
         # Save values to text file: rewards.txt
         np.savetxt(settings.SAVE_DIR + "/returns.txt",
-                   (self.steps_history, self.reward_history, self.speed_history), delimiter=',', fmt='%d')
+                   (self.steps_history, self.reward_history, self.speed_history, self.trunc_history),
+                   delimiter=',', fmt='%d')
 
     def get_config_dict(self):
         config = {
             "TEST_TYPE": settings.RUN_TYPE,
             "AGENT_TYPE": str(settings.AGENT_TYPE.upper()),
+            "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
+            "ENVIRONMENT_SEED": str(settings.ENVIRONMENT_SEED),
+            "SEED": str(settings.SEED),
+            "TRAINING_STEPS": str(settings.TRAINING_STEPS),
+            "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
+            "LANE_COUNT": str(graphics_settings.LANE_COUNT),
+            "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT)
         }
 
         if settings.RUN_TYPE.lower() == "multiagent":
             config.update(
                 {
-                    "AGENT_COUNT": multi_agent_settings.AGENT_COUNT,
-                    "OBSTRUCTION_COUNT": graphics_settings.OBSTRUCTION_COUNT,
                     "WAIT_UNTIL_TERMINATED": str(multi_agent_settings.WAIT_UNTIL_ALL_AGENTS_TERMINATED),
+                    "DEATH_HANDLING": str(multi_agent_settings.DEATH_HANDLING),
+                    "VALUE_FUNCTION_DEATH_MASKING": str(multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING),
                     "TEAM_SPIRIT": str(multi_agent_settings.TEAM_SPIRIT),
                     "SHARED_REPLAY_BUFFER": str(multi_agent_settings.SHARED_REPLAY_BUFFER),
-                    "PARAMETER_SHARING": str(multi_agent_settings.PARAMETER_SHARING)
+                    "PARAMETER_SHARING": str(multi_agent_settings.PARAMETER_SHARING),
+                    "NORMALISE_GLOBAL_STATE": str(multi_agent_settings.NORMALIZE_GLOBAL_STATE)
                 }
             )
-
-        config.update(
-            {
-                "ENVIRONMENT_SEED": str(settings.ENVIRONMENT_SEED),
-                "SEED": str(settings.SEED),
-                "TRAINING_STEPS": str(settings.TRAINING_STEPS),
-                "PLOT_STEPS_FREQUENCY": str(settings.PLOT_STEPS_FREQUENCY),
-                "LANE_COUNT": str(graphics_settings.LANE_COUNT),
-                "OBSTRUCTION_COUNT": str(graphics_settings.OBSTRUCTION_COUNT)
-            }
-        )
 
         config.update(self.agent.get_agent_specific_config())
 
@@ -82,7 +84,7 @@ class ResultsPlotter:
         frames_per_step = 15
         plt.figure(figsize=(8, 4))
         # plt.plot(x_values, y_values, marker='o', linestyle='-', color='b')
-        plt.plot(x_values * 15, y_values, linestyle='-', color='b', linewidth=1.0)
+        plt.plot(x_values * frames_per_step, y_values, linestyle='-', color='b', linewidth=1.0)
         plt.xlabel(labels[0])
         plt.ylabel(labels[1])
         if save_dir:

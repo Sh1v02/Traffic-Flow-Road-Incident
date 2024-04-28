@@ -1,6 +1,7 @@
 import warnings
 
 from src.AgentRunners import MultiAgentRunner
+from src.AgentRunners.MAPPOAgentRunner import MAPPOAgentRunner
 from src.AgentRunners.QMIXAgentRunner import QMIXAgentRunner
 from src.Agents import AgentFactory
 from src.Utilities import settings, multi_agent_settings
@@ -46,10 +47,14 @@ def run_multi_agent():
 
     env, test_env = Helper.create_environments(multi_agent_config)
 
-    state_dims, action_dims = Helper.get_env_dims(env)
+    state_dims, action_dims, global_state_dims = Helper.get_env_dims(env)
 
-    if settings.AGENT_TYPE.lower() == "qmix" or settings.AGENT_TYPE.lower() == "vdn":
-        multi_agent_runner = QMIXAgentRunner(env, test_env, state_dims, len(env.get_global_state()), action_dims)
+    if settings.AGENT_TYPE.lower() in ("qmix", "mappo", "vdn"):
+        if settings.AGENT_TYPE.lower() in ("qmix", "vdn"):
+            multi_agent_runner = QMIXAgentRunner(env, test_env, state_dims, global_state_dims, action_dims)
+        else:
+            multi_agent_runner = MAPPOAgentRunner(env, test_env, state_dims, global_state_dims, action_dims)
+
         multi_agent_runner.train()
         multi_agent_runner.save_final_results()
         multi_agent_runner.test()

@@ -42,18 +42,22 @@ class PPOAgent(Agent):
 
         self.steps = 0
 
-    def get_action(self, state, training=True):
-        state = tensor(state)
-        action_distribution = self.actor(state)
+    # value_function_state is only passed in if the critic takes in something other than the agent's observation
+    #   such as when MAPPO passes in a global state representation of some form
+    def get_action(self, local_state, value_function_state=None, training=True):
+        local_state = tensor(local_state)
+        action_distribution = self.actor(local_state)
 
         if not training:
             return torch.argmax(action_distribution.probs).item()
 
         action = action_distribution.sample()
 
+        value_function_state = tensor(value_function_state) if value_function_state is not None else local_state
+
         probability = torch.squeeze(action_distribution.log_prob(action)).item()
         action = torch.squeeze(action).item()
-        value = torch.squeeze(self.critic(state)).item()
+        value = torch.squeeze(self.critic(value_function_state)).item()
 
         return action, value, probability
 
