@@ -5,7 +5,7 @@ from torch import nn
 
 from src.Models import QMIXMixerNetwork
 from src.Models.QMIX.QMIXAgentNetwork import QMIXAgentNetwork
-from src.Models.QMIX.QMIXMixerNetwork import VDNMixerNetwork
+from src.Models.QMIX.MixerNetwork import VDNMixerNetwork
 from src.Utilities import multi_agent_settings, settings
 from src.Wrappers.GPUSupport import optimise
 
