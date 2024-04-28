@@ -4,6 +4,10 @@ from src.Utilities import settings, multi_agent_settings
 # Sets all parameters to their optimal values
 def use_optimal_parameters():
     agent_type = settings.AGENT_TYPE.lower()
+
+    multi_agent_settings.SHARED_REPLAY_BUFFER = True
+    multi_agent_settings.PARAMETER_SHARING[0] = "FULL"
+    multi_agent_settings.NORMALIZE_GLOBAL_STATE = True
     
     # -------------------------- DDQN Optimal Parameters ----------------------------
     if agent_type == "ddqn":
@@ -66,7 +70,6 @@ def use_optimal_parameters():
     if agent_type == "mappo":
         settings.MAPPO_VALUE_FUNCTION_INPUT_REPRESENTATION = "AS"  # Environment Provided    Agent Specific
         multi_agent_settings.VALUE_FUNCTION_DEATH_MASKING = True
-        multi_agent_settings.NORMALIZE_GLOBAL_STATE = True
         multi_agent_settings.SHARED_REPLAY_BUFFER = True
         settings.MAPPO_NETWORK_DIMS = [256, 256, 256, 256]
         settings.MAPPO_CRITIC_LOSS_FUNCTION = "MSE"
