@@ -9,7 +9,7 @@ import distinctipy
 
 font = {'family': 'Arial',
         'weight': 'normal',
-        'size': 12}
+        'size': 14}
 
 plt.rc('font', **font)
 
@@ -154,10 +154,11 @@ class FreeGraphPlotter:
     #       - rewards_1.txt
     #       - rewards_2.txt
     @staticmethod
-    def plot_multiple_average_graphs(parent_directory, r_avg_window_size=100):
+    def plot_multiple_average_graphs(parent_directory, r_avg_window_size=100, title=None):
+        plt.rc('font', **font)
         num_folders_in_parent_dir = len(os.listdir(parent_directory))
         # line_colours = ['blue', 'red', 'green', 'magenta', 'cyan', 'black', 'purple', 'gray', 'yellow', 'orange']
-        line_colours = distinctipy.get_colors(num_folders_in_parent_dir)
+        line_colours = distinctipy.get_colors(num_folders_in_parent_dir, rng=22, colorblind_type="Deuteranomaly")
         colour_index = 0
         columns = ['Return', 'Step', 'Speed (mph)', 'Step',
                    'Count', 'Rate (0 - 1)']
@@ -168,6 +169,11 @@ class FreeGraphPlotter:
         rewards_axis.margins(0, 0)
         speeds_axis.margins(0, 0)
         ends_reached_axis.margins(0, 0)
+
+        combined_fig, combined_axis = plt.subplots(1, 3, figsize=(17, 5))
+        combined_axis[0].margins(0, 0)
+        combined_axis[1].margins(0, 0)
+        combined_axis[2].margins(0, 0)
         for run_directory in os.listdir(parent_directory):
             current_directory = os.path.join(parent_directory, run_directory)
             if not os.path.isdir(current_directory):
@@ -187,33 +193,42 @@ class FreeGraphPlotter:
                                                line_colours[colour_index])
             FreeGraphPlotter.plot_filled_graph(ends_reached_axis, all_steps, stacked_ends_reached, run_directory,
                                                line_colours[colour_index], allow_negatives=False)
+
+            FreeGraphPlotter.plot_filled_graph(combined_axis[0], steps, stacked_rewards, run_directory,
+                                               line_colours[colour_index])
+            FreeGraphPlotter.plot_filled_graph(combined_axis[1], steps, stacked_speeds, run_directory,
+                                               line_colours[colour_index])
+            FreeGraphPlotter.plot_filled_graph(combined_axis[2], all_steps, stacked_ends_reached, run_directory,
+                                               line_colours[colour_index], allow_negatives=False)
             colour_index += 1
 
             df = FreeGraphPlotter.save_stats_df_to_csv(current_directory, df, r_avg_window_size=r_avg_window_size)
 
         save_dir = parent_directory + "/AveragesResults/"
         os.makedirs(save_dir, exist_ok=True)
+        legend_font_size = 10
 
         rewards_axis.set_xlabel('Frames')
         rewards_axis.set_ylabel('Rolling Average Return')
-        rewards_axis.legend(fontsize='8')
-        rewards_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
+        rewards_axis.legend(fontsize=legend_font_size)
+        rewards_axis.set_title(title)
         rewards_fig.savefig(save_dir + "Returns Rolling Average (window_size=" + str(r_avg_window_size) + ")", dpi=dpi)
 
         speeds_axis.set_xlabel('Frames')
         speeds_axis.set_ylabel('Rolling Average Speed')
-        speeds_axis.legend(fontsize='8')
-        speeds_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
+        speeds_axis.legend(fontsize=legend_font_size)
+        speeds_axis.set_title(title)
         speeds_fig.savefig(save_dir + "Speeds Rolling Average (window_size=" + str(r_avg_window_size) + ")", dpi=dpi)
 
         ends_reached_axis.set_xlabel('Frames')
         ends_reached_axis.set_ylabel('Ends Reached')
-        ends_reached_axis.legend(fontsize='8')
-        ends_reached_axis.set_title(parent_directory.rstrip("/").split("/")[-1])
+        ends_reached_axis.legend(fontsize=legend_font_size)
+        ends_reached_axis.set_title(title)
         end_reached_fig.savefig(save_dir + "Ends Reached", dpi=dpi)
 
         table_save_dir = save_dir + "/Table"
         os.makedirs(table_save_dir, exist_ok=True)
+
 
         df.to_csv(table_save_dir + "/dataframe.csv")
         latex_table_format = {
@@ -235,6 +250,32 @@ class FreeGraphPlotter:
 
         with open(table_save_dir + "/" + parent_directory.split('/')[-1] + "_table.tex", 'w') as f:
             f.write(latex_table)
+
+        combined_axis[0].set_xlabel('Frames')
+        combined_axis[0].set_ylabel('Rolling Average Return')
+        combined_axis[0].set_title('Team Return')
+
+        combined_axis[1].set_xlabel('Frames')
+        combined_axis[1].set_ylabel('Rolling Average Speed')
+        combined_axis[1].set_title('Team Average Speed')
+
+        combined_axis[2].set_xlabel('Frames')
+        combined_axis[2].set_ylabel('Ends Reached')
+        combined_axis[2].set_title('Obstructions Cleared Frequency')
+
+        handles, labels = [], []
+        for h, l in zip(*combined_axis[0].get_legend_handles_labels()):
+            handles.append(h)
+            labels.append(l)
+
+        n_cols = 8
+        # Create a single legend
+        combined_fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 0.12), ncol=n_cols, fontsize=16)
+
+        combined_fig.tight_layout(w_pad=1.5)
+
+        combined_fig.subplots_adjust(left=0.04, bottom=0.22, top=0.9)
+        combined_fig.savefig(save_dir + '/all_plots_in_one.png', dpi=dpi)
 
     @staticmethod
     def plot_multiple_individual_graphs(directory, r_avg_window_size=100):
@@ -318,7 +359,7 @@ class FreeGraphPlotter:
 # TODO: Label the axis on the plots
 if __name__ == '__main__':
     local_path = "../../"
-    plots_dir = local_path + "ForTheReport/Experiments/Experiment_3/3,9,3/MAPPO"
+    plots_dir = local_path + "ForTheReport/Experiments/Experiment_4/2,9,3/MAPPO"
 
     # download_from = plots_dir + "4 Agents 9 Obstructions/Standard"
     # download_to = plots_dir + "4 Agents 9 Obstructions/Standard"
