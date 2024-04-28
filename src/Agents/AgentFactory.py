@@ -12,11 +12,11 @@ from src.Utilities import settings
 class AgentFactory:
     @staticmethod
     def create_new_agent(state_dims, action_dims, env, replay_buffer=None, networks=None):
-        if settings.AGENT_TYPE == "ddqn":
+        if settings.AGENT_TYPE.lower() == "ddqn":
             return DDQNAgent(state_dims, action_dims, replay_buffer=replay_buffer)
-        if settings.AGENT_TYPE == "ppo":
+        if settings.AGENT_TYPE.lower() == "ppo":
             return PPOAgent(state_dims, action_dims, replay_buffer=replay_buffer, networks=networks)
-        if settings.AGENT_TYPE == "ddpg":
+        if settings.AGENT_TYPE.lower() == "ddpg":
             return DDPGAgent(state_dims, action_dims, env, noise=0.8)
 
         raise Exception("No agent found with type: ", settings.AGENT_TYPE)
