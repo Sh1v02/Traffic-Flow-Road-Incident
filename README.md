@@ -16,16 +16,15 @@ parameters in [graphics_settings](src/Utilities/graphics_settings.py)
 To run a multi-agent algorithm, run [multi_agent_run](src/multi_agent_run.py). This will render the environment,
 assuming you set the appropriate value to True, and results will be displayed in the console.
 
-----------------------------------------------------------------
 For any issues with packages, ensure that all dependencies in [requirements.txt](requirements.txt) are installed, and
 the correct version.
 
 Alternatively, you can run:
 
-- `pip install -r requirements.txt`
+- `pip install -r requirements.txt` if running locally
+- `pip install -r requirements_colab.txt` if running on Google Colab
 
-----------------------------------------------------------------
-
+--------------------------------------------------------------------
 #### The foundation environment extended in this work is taken from [Farama-Foundation/HighwayEnv](https://github.com/Farama-Foundation/HighwayEnv). The citation can be seen below:
 
 ```bibtex
