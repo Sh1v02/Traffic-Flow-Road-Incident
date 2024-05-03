@@ -201,7 +201,7 @@ class Vehicle(RoadObject):
 
     @property
     def velocity(self) -> np.ndarray:
-        return self.speed * self.direction  # TODO: slip angle beta should be used here
+        return self.speed * self.direction
 
     @property
     def destination(self) -> np.ndarray:

@@ -14,7 +14,6 @@ class Helper:
     def create_environments(config=None):
         env = Helper.initialise_env(config=config, record_env=False)
 
-        # TODO: implement for agents types than ppo?
         # We want to record optimal policy (no exploration) only after the latest updates, and then not til the next
 
         test_env_record_frequency = [i for i in range(settings.TRAINING_STEPS // settings.PLOT_STEPS_FREQUENCY)]

@@ -387,7 +387,7 @@ class RoadObjectGraphics:
         pygame.draw.rect(s, cls.BLACK, rect, 1)
         if (
             not offscreen
-        ):  # convert_alpha throws errors in offscreen mode TODO() Explain why
+        ):  # convert_alpha throws errors in offscreen mode
             s = pygame.Surface.convert_alpha(s)
         h = o.heading if abs(o.heading) > 2 * np.pi / 180 else 0
         # Centered rotation

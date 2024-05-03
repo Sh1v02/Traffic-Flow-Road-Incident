@@ -9,7 +9,6 @@ from src.Models import MultiLayerPerceptron
 from src.Utilities import settings
 
 
-# TODO: Add shared replay buffer compatibility (see PPOAgent and AgentFactory)
 class DDQNAgent(Agent):
     def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.HuberLoss(),
                  replay_buffer=None):

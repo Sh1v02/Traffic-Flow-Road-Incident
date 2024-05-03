@@ -63,7 +63,6 @@ class QMIXMixerNetwork(nn.Module):
         agent_q_values = agent_q_values.unsqueeze(1) if self.shared_agent_net else \
             agent_q_values.view(-1, 1, multi_agent_settings.AGENT_COUNT)
 
-        # TODO: Make sure the output of this matches agent_q_values dims so we can matrix multiply
         weights_1 = torch.abs(self.hyper_network_for_input_layer_weights(global_states))
         weights_1 = weights_1.unsqueeze(1) if self.shared_agent_net else \
             weights_1.view(-1, multi_agent_settings.AGENT_COUNT, self.hidden_layer_dims)
@@ -78,7 +77,7 @@ class QMIXMixerNetwork(nn.Module):
         # Weighted sum of weights_2 with first mixing network layer output, then add bias_1
         # No activation function
         weights_final = torch.abs(self.hyper_network_for_output_layer_weights(global_states))
-        weights_final = weights_final.unsqueeze(2) if self.shared_agent_net else\
+        weights_final = weights_final.unsqueeze(2) if self.shared_agent_net else \
             weights_final.view(-1, self.hidden_layer_dims, 1)
         bias_final = self.hyper_network_for_output_layer_bias(global_states)
         bias_final = bias_final.unsqueeze(1) if self.shared_agent_net else bias_final.view(-1, 1, 1)

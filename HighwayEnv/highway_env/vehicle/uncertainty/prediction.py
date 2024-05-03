@@ -340,7 +340,6 @@ class IntervalVehicle(LinearVehicle):
         return polytope(a_theta, parameter_box)
 
     def get_front_interval(self) -> "VehicleInterval":
-        # TODO: For now, we assume the front vehicle follows the models' front vehicle
         front_vehicle, _ = self.road.neighbour_vehicles(self)
         if front_vehicle:
             if isinstance(front_vehicle, IntervalVehicle):

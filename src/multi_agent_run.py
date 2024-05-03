@@ -27,7 +27,6 @@ multi_agent_config = {
                 "vx": [-30, 30],
                 "vy": [-30, 30]
             },
-            # TODO: Try with False! (MAYBE CHANGE NORMALIZE TOO)
             "absolute": True,
             "order": "sorted",
         },

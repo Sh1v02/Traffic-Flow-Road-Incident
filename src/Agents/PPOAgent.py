@@ -13,8 +13,6 @@ from src.Wrappers.GPUSupport import tensor
 # batch_size = 5, update_frequency = 20
 # observation -> absolute = False
 
-# TODO: Tensorboard
-# TODO: Agent parent class (also includes static agent_specific_config to be called in the get_config_dict method)
 class PPOAgent(Agent):
     def __init__(self, state_dims, action_dims, optimiser=torch.optim.Adam, loss=torch.nn.MSELoss(), num_epochs=10,
                  replay_buffer=None, networks=None):
@@ -33,7 +31,6 @@ class PPOAgent(Agent):
         self.entropy_coefficient_min = settings.PPO_ENTROPY_COEFFICIENT_MIN
 
         self.hidden_layer_dims = settings.PPO_NETWORK_DIMS
-        # TODO: Add entropy coefficient decay
         self.actor = PPOActorNetwork(optimiser, loss, state_dims, action_dims, optimiser_args={"lr": self.actor_lr},
                                      hidden_layer_dims=self.hidden_layer_dims) if not networks else networks["actor"]
         self.critic = PPOCriticNetwork(optimiser, loss, state_dims, optimiser_args={"lr": self.critic_lr},
@@ -97,7 +94,6 @@ class PPOAgent(Agent):
         for epoch in range(self.num_epochs):
             batches = self.replay_buffer.sample_experience(self.batch_size)
 
-            # TODO: Vectorise this
             for batch in batches:
                 batch_states = states[batch]
                 batch_actions = actions[batch]
@@ -155,7 +151,6 @@ class PPOAgent(Agent):
                 gamma_gae_lambda *= self.gamma * self.gae_lambda
             advantages = np.append(advantages, current_advantage)
 
-        # TODO: Is it better to remove last element overall? --> can be done by returning batches in range (len - 1)
         # Account for last
         advantages = np.append(advantages, 0)
         return advantages

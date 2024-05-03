@@ -63,7 +63,7 @@ def use_optimal_parameters():
         settings.QMIX_PER_EPSILON = 0.1
         if agent_type == "vdn":
             settings.QMIX_SOFT_UPDATE = False
-            settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY = 500  # TODO: try 50
+            settings.QMIX_HARD_UPDATE_NETWORKS_FREQUENCY = 500
             settings.QMIX_DISCOUNT_FACTOR = 0.85
 
     # -------------------------- MAPPO Optimal Parameters ---------------------------

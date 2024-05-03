@@ -153,7 +153,6 @@ def compute_ttc_grid(
                         int(np.ceil(time_to_collision / time_quantization)),
                     ]:
                         if 0 <= time < grid.shape[2]:
-                            # TODO: check lane overflow (e.g. vehicle with higher lane id than current road capacity)
                             grid[speed_index, lane, time] = np.maximum(
                                 grid[speed_index, lane, time], cost
                             )

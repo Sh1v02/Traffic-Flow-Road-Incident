@@ -17,7 +17,6 @@ from src.Utilities import graphics_settings, multi_agent_settings
 Observation = np.ndarray
 
 
-# TODO: Allow for multi-agent compatibility (check IntersectionEnvironment step function and look at the methods called)
 class HighwayEnvWithObstructions(AbstractEnv):
     """
     A highway driving environment.
@@ -130,15 +129,12 @@ class HighwayEnvWithObstructions(AbstractEnv):
                 BrokenDownVehicle(self.road, position))
             self.road.objects.append(obstruction)
 
-    # TODO: Understand whether the average reward is used for each agents TD-error,
-    #  or if its own individual reward is used
     def _reward(self, action: Action) -> float:
         """Aggregated reward, for cooperative agents."""
         return sum(
             self._agent_reward(vehicle) for vehicle in self.controlled_vehicles
         ) / len(self.controlled_vehicles)
 
-    # TODO: Create a MultiAgentWrapper that handles this to prevent duplication
     def _agent_reward(self, vehicle: Vehicle) -> float:
         """
         Per-agent reward signal.
@@ -186,7 +182,7 @@ class HighwayEnvWithObstructions(AbstractEnv):
         scaled_speed = utils.lmap(
             forward_speed, self.config["reward_speed_range"], [0, 1]
         )
-        # TODO: For lane centering, look at racetrack_env.py _rewards()
+
         return {
             "collision_reward": float(vehicle.crashed),
             "right_lane_reward": lane / max(len(neighbours) - 1, 1),
@@ -194,7 +190,6 @@ class HighwayEnvWithObstructions(AbstractEnv):
             # "arrived_reward": self.has_arrived(vehicle),
             "on_road_reward": float(vehicle.on_road),
             # "in_lane": 1 - (lateral / self.vehicle.lane.width) ** 2,
-            # # TODO: Remove lane_center_reward/replace with this reward?
             # "lane_centering_reward": 1
             #                          / (1 + self.config["lane_centering_cost"] * lateral ** 2),
         }
@@ -215,7 +210,6 @@ class HighwayEnvWithObstructions(AbstractEnv):
             any(self._agent_is_terminal(vehicle) for vehicle in self.controlled_vehicles)
         )
 
-    # TODO: (High) End episode when all agents have passed the last obstruction
     def _agent_is_terminal(self, vehicle: Vehicle) -> bool:
         """The episode is over when a collision occurs or when the vehicle is offroad."""
         return vehicle.crashed or (self.config["offroad_terminal"] and not vehicle.on_road)
