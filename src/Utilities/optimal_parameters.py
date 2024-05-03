@@ -46,7 +46,7 @@ def use_optimal_parameters():
         settings.QMIX_AGENT_NETWORK_DIMS = [256, 256, 256, 256]
         settings.QMIX_HYPER_NETWORK_LAYERS = 2
         settings.QMIX_HYPER_NETWORK_DIMS = 64
-        settings.QMIX_MIXER_NETWORK_DIMS = 120
+        settings.QMIX_MIXER_NETWORK_DIMS = 128
         settings.QMIX_DISCOUNT_FACTOR = 0.9
         settings.QMIX_LR = [3e-4, 1e-4, 250000, False]
         settings.QMIX_SOFT_UPDATE = True
